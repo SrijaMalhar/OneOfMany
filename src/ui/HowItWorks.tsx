@@ -2,7 +2,9 @@
 // why each job sits where it does.
 
 import { useEffect, useRef } from 'react'
+import { Cyclops } from './Cyclops'
 import { ChipIcon, CloseIcon, CloudIcon, ShieldIcon } from './icons'
+import { Sheep } from './Nobody'
 
 const JOBS = [
   {
@@ -52,6 +54,26 @@ export function HowItWorks({ open, onClose }: { open: boolean; onClose: () => vo
             <CloseIcon />
           </button>
         </header>
+        <div className="cast">
+          <figure>
+            <Sheep mood="calm" size={64} />
+            <figcaption>
+              <b>Nobody</b> is you: one sheep in a flock. It warms up as your draft gives you away and steps out of line when
+              you’re found.
+            </figcaption>
+          </figure>
+          <figure>
+            <Cyclops state="idle" size={104} />
+            <figcaption>
+              <b>The Cyclops</b> is the detective: a cloud model with one eye on your words and no idea who you are.
+            </figcaption>
+          </figure>
+        </div>
+        <p className="odyssey">
+          In the Odyssey, Odysseus tells the one-eyed Cyclops that his name is Nobody, then slips out of the cave hidden in the flock.
+          OneOfMany does the same for your post: the cloud gets your words, never your name, and you leave as one of many.
+        </p>
+
         <p className="how-lede">
           The test only means something if the attacker doesn’t know the answer, and only your device may hold the answer. So the
           split between device and cloud isn’t an optimisation here. It’s the security design.

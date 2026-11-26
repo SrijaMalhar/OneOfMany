@@ -23,7 +23,12 @@ export function Vault({ vault, onChange, device, progress, canDownload, onDownlo
   const set = (a: Attribute, v: string) => onChange({ ...vault, [a]: v })
 
   return (
-    <section className="vault" aria-labelledby="vault-title">
+    <section className={show ? 'vault is-open' : 'vault'} aria-labelledby="vault-title">
+      <div className="vault-flap" aria-hidden="true">
+        <span className="seal">
+          <LockIcon />
+        </span>
+      </div>
       <header className="vault-head">
         <div>
           <h3 id="vault-title" className="dev-h3">
@@ -36,7 +41,7 @@ export function Vault({ vault, onChange, device, progress, canDownload, onDownlo
         </div>
         <button type="button" className="ghost-btn" onClick={() => setShow((v) => !v)} aria-pressed={show}>
           {show ? <EyeOffIcon /> : <EyeIcon />}
-          {show ? 'Hide' : 'Show'}
+          {show ? 'Seal it' : 'Open'}
         </button>
       </header>
 
