@@ -1,5 +1,5 @@
-// OneOfMany: the left half of the screen is your device, the right half is
-// the cloud. Your draft crosses the line between them; your vault never does.
+// OneOfMany: the left pane is your device, the right pane is the cloud.
+// Your draft crosses the line between them; your vault never does.
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { audit as auditRecords } from './ai/receipt'
@@ -36,15 +36,16 @@ import { Header } from './ui/Header'
 import { evidenceTells, withHeat } from './ui/heat'
 import { useDeviceStatus, useOnline, useReceipt } from './ui/hooks'
 import { HowItWorks } from './ui/HowItWorks'
-import { CloudIcon, LockIcon } from './ui/icons'
+import { CloudIcon, InfoIcon, LockIcon } from './ui/icons'
 import { Receipt } from './ui/Receipt'
 import { Report, Runs, type Run, type RunView } from './ui/Report'
 import { Seam } from './ui/Seam'
 import { Threads, type Link } from './ui/Threads'
 import { now } from './ui/time'
 import { coach } from './ui/coach'
-import type { CyclopsState } from './ui/Cyclops'
-import { Flock, SheepDefs } from './ui/Nobody'
+import { useTheme } from './ui/theme'
+import { Toaster } from './ui/Toaster'
+import { toast } from './ui/toasts'
 import { Vault } from './ui/Vault'
 import { Viewfinder } from './ui/Viewfinder'
 
@@ -55,6 +56,7 @@ function wordCount(s: string) {
 }
 
 export default function App() {
+  const [theme, setTheme] = useTheme()
   const [settings, setSettings] = useState(DEFAULT_SETTINGS)
   useEffect(() => {
     loadSettings().then(setSettings)
@@ -222,9 +224,10 @@ export default function App() {
     try {
       await navigator.clipboard.writeText(draft)
       setCopied(true)
+      toast('Post copied. Paste it wherever you’re posting.')
       setTimeout(() => setCopied(false), 1800)
     } catch {
-      /* clipboard blocked; the text is still in the editor */
+      toast('Couldn’t reach the clipboard. Select the text in the editor and copy it.')
     }
   }
 
@@ -232,9 +235,18 @@ export default function App() {
   const quickBlur = (t: { start: number; end: number; text: string }) => {
     const b = blurSpan(draft, t)
     if (!b) return
-    setUndo(draft)
+    const before = draft
+    setUndo(before)
     setDraft(replaceSpan(draft, b.start, b.end, b.replacement))
     setFixesSinceRun((n) => n + 1)
+    toast(b.replacement ? `Blurred “${t.text}” to “${b.replacement}”` : `Removed “${t.text}”`, {
+      label: 'Undo',
+      run: () => {
+        setDraft(before)
+        setUndo(null)
+        setFixesSinceRun((n) => Math.max(0, n - 1))
+      },
+    })
   }
 
   const coolDown = async () => {
@@ -332,7 +344,7 @@ export default function App() {
 
   const [scope, setScope] = useState<'alone' | 'history'>('alone')
   const [hoverFact, setHoverFact] = useState<Attribute | null>(null)
-  const splitRef = useRef<HTMLDivElement>(null)
+  const splitRef = useRef<HTMLElement>(null)
   const shownView = lastRun ? (scope === 'history' && lastRun.history ? lastRun.history : lastRun) : null
   const threadLinks: Link[] = shownView
     ? shownView.exposure.facts.filter((f) => f.status === 'recovered' || f.status === 'narrowed').map((f) => ({ attribute: f.attribute, status: f.status }))
@@ -341,7 +353,7 @@ export default function App() {
   const graderLabel = lastRun?.grades.some((g) => g.by === 'on_device') ? 'Gemini Nano' : 'rules'
 
   const current = lastRun && lastRun.draft === draft ? lastRun.exposure : null
-  const nobody = coach({
+  const hint = coach({
     draft,
     words,
     tells,
@@ -352,40 +364,21 @@ export default function App() {
     runs: runs.length,
     fixesPending: fixesSinceRun,
   })
-  const cyclops: CyclopsState =
-    !isConfigured || !online
-      ? 'asleep'
-      : det.status === 'running'
-        ? 'scanning'
-        : current
-          ? current.score >= 50
-            ? 'found'
-            : current.score >= 25
-              ? 'unsure'
-              : 'lost'
-          : 'idle'
+  const foundBy =
+    aiScan && aiScan.forDraft === draft ? (aiScan.source === 'on_device' ? 'Scanned by Gemini Nano on this device' : 'Deep-scanned in the cloud') : 'Found by rules on this device'
   const scanFooter =
     scan.status === 'running' ? (
-      <span className="pulse">{deviceReady ? 'Gemini Nano is reading your draft' : 'Scanning'}</span>
+      <span className="pulse">{deviceReady ? 'Gemini Nano is reading your draft' : 'Scanning in the cloud'}</span>
     ) : (
       <>
-        <span>
-          {tells.length} {tells.length === 1 ? 'giveaway' : 'giveaways'}
-          {aiScan && aiScan.forDraft === draft
-            ? aiScan.source === 'on_device'
-              ? ', scanned by Gemini Nano on this device'
-              : ', deep-scanned in the cloud'
-            : ', found by rules on this device'}
+        {scan.status === 'error' ? <span className="vf-error">{scan.error}</span> : tells.length ? <span className="hide-sm">{foundBy}</span> : null}
+        <span className="vf-words">
+          {words} {words === 1 ? 'word' : 'words'}
         </span>
-        {!deviceReady && isConfigured && online && draft.trim().length >= 20 && aiScan?.forDraft !== draft ? (
-          <button type="button" className="ghost-btn" onClick={scanNow}>
-            Deep scan in the cloud
-          </button>
-        ) : null}
         {undo != null ? (
           <button
             type="button"
-            className="ghost-btn"
+            className="btn btn-ghost btn-sm"
             onClick={() => {
               setDraft(undo)
               setUndo(null)
@@ -395,131 +388,150 @@ export default function App() {
             Undo blur
           </button>
         ) : null}
-        {scan.status === 'error' ? <span className="vf-error">{scan.error}</span> : null}
+        {!deviceReady && isConfigured && online && draft.trim().length >= 20 && aiScan?.forDraft !== draft ? (
+          <button type="button" className="btn btn-sm" onClick={scanNow} data-tip="One extra pass by a fast cloud model. Your vault isn’t sent." data-tip-align="end">
+            Deep scan
+          </button>
+        ) : null}
       </>
     )
 
   return (
     <div className="app">
-      <SheepDefs />
-      <Header online={online} device={device} cloudCalls={audit.inCloud} onHowItWorks={() => setHowOpen(true)} onReceipt={() => setReceiptOpen(true)} />
+      <Header
+        online={online}
+        device={device}
+        cloudCalls={audit.inCloud}
+        vaultValuesSent={audit.vaultValuesSent}
+        theme={theme}
+        onTheme={setTheme}
+        onHowItWorks={() => setHowOpen(true)}
+        onReceipt={() => setReceiptOpen(true)}
+      />
 
-      <div className="split" ref={splitRef}>
+      <main className="workspace" ref={splitRef}>
         <Threads container={splitRef} links={threadLinks} active={hoverFact} version={`${lastRun?.id ?? 0}|${scope}|${det.status}|${fix?.status ?? ''}|${draft}`} />
-        <div className="side side-device">
-          <p className="region">
-            <LockIcon /> On your device
-          </p>
-          <h1 className="hero">
-            <span className="hero-1">Your account is anonymous.</span>
-            <span className="hero-2">Is your post?</span>
-          </h1>
-          <p className="lede">
-            Before you post on Reddit, Glassdoor or a staff forum, send a detective after your draft. It reads only your words. Who
-            you really are stays sealed in this browser, where Gemini Nano checks which of its guesses were right.
-          </p>
-          <Flock mood={nobody.mood} glow={nobody.glow} says={nobody.says} singledOut={nobody.singledOut} />
-          <div className="samples" role="group" aria-label="Sample stories">
-            <span className="samples-label">Try a story</span>
-            {SAMPLES.map((s) => (
-              <button key={s.id} type="button" className="sample" aria-pressed={sampleId === s.id && isSample} onClick={() => loadSample(s.id)}>
-                {s.title}
-              </button>
-            ))}
+        <div className="pane pane-device">
+          <div className="pane-bar">
+            <div className="pane-bar-inner">
+              <span className="pane-label">
+                <LockIcon /> This device
+              </span>
+              <span className="pane-meta">Your vault and your checks stay here</span>
+            </div>
           </div>
+          <div className="pane-body">
+            <div className="intro">
+              <h1 className="title">Your account is anonymous. Is your post?</h1>
+              <p className="lede">
+                Before you post on Reddit, Glassdoor or a staff forum, check what your words give away. Who you really are stays in
+                this browser, where it’s used to check the detective’s guesses.
+              </p>
+            </div>
 
-          <Viewfinder
-            draft={draft}
-            onChange={typeDraft}
-            onSubmit={() => {
-              if (!blocker && (confirmed || isSample) && det.status !== 'running') sendDetective()
-            }}
-            tells={tells}
-            focus={focus}
-            warmKey={warmKey}
-            linked={hoverFact}
-            footer={scanFooter}
-          />
+            <div className="samples" role="group" aria-label="Sample stories">
+              <span className="samples-label">Try a sample</span>
+              <div className="segmented">
+                {SAMPLES.map((s) => (
+                  <button key={s.id} type="button" aria-pressed={sampleId === s.id && isSample} onClick={() => loadSample(s.id)}>
+                    {s.title}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <Giveaways
-            tells={tells}
-            onPick={(t) => pointAt(t.start, t.end)}
-            blurOf={(t) => blurSpan(draft, t)?.replacement ?? null}
-            onBlur={quickBlur}
-          />
-
-          {fix ? (
-            <div ref={fixesRef}>
-              <Fixes
-                state={fix}
-                meaning={meaning}
-                onToggle={(i) =>
-                  setFix((f) => (f?.status === 'ready' ? { ...f, fixes: f.fixes.map((x, j) => (j === i ? { ...x, accepted: !x.accepted } : x)) } : f))
-                }
-                onApply={applyChosen}
-                onCopy={copyPost}
-                copied={copied}
-                onRetest={sendDetective}
-                onRetry={coolDown}
-                onClose={() => setFix(null)}
+            <div className="section">
+              <p className={`hint tone-${hint.tone}`} role="status" aria-live="polite">
+                <InfoIcon />
+                <span>{hint.says}</span>
+              </p>
+              <Viewfinder
+                draft={draft}
+                onChange={typeDraft}
+                onSubmit={() => {
+                  if (!blocker && (confirmed || isSample) && det.status !== 'running') sendDetective()
+                }}
+                tells={tells}
+                focus={focus}
+                warmKey={warmKey}
+                linked={hoverFact}
+                footer={scanFooter}
               />
             </div>
-          ) : null}
 
-          <EarlierPosts posts={earlier} onChange={setEarlier} />
+            <Giveaways tells={tells} onPick={(t) => pointAt(t.start, t.end)} blurOf={(t) => blurSpan(draft, t)?.replacement ?? null} onBlur={quickBlur} />
 
-          <Vault
-            vault={vault}
-            onChange={setVault}
-            device={device}
-            progress={progress}
-            canDownload={isConfigured}
-            onDownload={download}
-            onForget={forget}
-          />
+            {fix ? (
+              <div ref={fixesRef}>
+                <Fixes
+                  state={fix}
+                  meaning={meaning}
+                  onToggle={(i) =>
+                    setFix((f) => (f?.status === 'ready' ? { ...f, fixes: f.fixes.map((x, j) => (j === i ? { ...x, accepted: !x.accepted } : x)) } : f))
+                  }
+                  onApply={applyChosen}
+                  onCopy={copyPost}
+                  copied={copied}
+                  onRetest={sendDetective}
+                  onRetry={coolDown}
+                  onClose={() => setFix(null)}
+                />
+              </div>
+            ) : null}
+
+            <EarlierPosts posts={earlier} onChange={setEarlier} />
+
+            <Vault vault={vault} onChange={setVault} device={device} progress={progress} canDownload={isConfigured} onDownload={download} onForget={forget} />
+          </div>
         </div>
 
         <Seam vaultValuesSent={audit.vaultValuesSent} blocked={audit.blocked} crossing={crossing} onOpenReceipt={() => setReceiptOpen(true)} />
 
-        <div className="side side-cloud">
-          <p className="region">
-            <CloudIcon /> In the cloud
-          </p>
-          <Detective
-            cyclops={cyclops}
-            state={det}
-            words={words}
-            vaultFacts={vaultFacts}
-            earlierPosts={earlierPosts.length}
-            confirmed={confirmed || isSample}
-            sample={isSample}
-            onConfirm={setConfirmed}
-            onSend={sendDetective}
-            blocker={blocker}
-            hasRuns={runs.length > 0}
-            blankFacts={blankFacts}
-          />
-          <div ref={reportRef} className="report-anchor">
-            {lastRun ? (
-              <Report
-                key={lastRun.id}
-                run={lastRun}
-                scope={scope}
-                onScope={setScope}
-                onHoverFact={setHoverFact}
-                draft={draft}
-                graderLabel={graderLabel}
-                onEvidence={pointAtQuote}
-                onOverride={override}
-                onCoolDown={coolDown}
-                coolingDisabled={fix?.status === 'loading'}
-              />
-            ) : null}
+        <div className="pane pane-cloud">
+          <div className="pane-bar">
+            <div className="pane-bar-inner">
+              <span className="pane-label">
+                <CloudIcon /> Cloud
+              </span>
+              <span className="pane-meta mono">{lastRun?.report.model ?? settings.detectiveModel}</span>
+            </div>
           </div>
-          <Runs runs={runs} />
-          {runs.length ? <BeforeYouPost key={runs[0].id} score={current ? current.score : null} onCopy={copyPost} copied={copied} /> : null}
+          <div className="pane-body">
+            <Detective
+              state={det}
+              words={words}
+              vaultFacts={vaultFacts}
+              earlierPosts={earlierPosts.length}
+              confirmed={confirmed || isSample}
+              sample={isSample}
+              onConfirm={setConfirmed}
+              onSend={sendDetective}
+              blocker={blocker}
+              hasRuns={runs.length > 0}
+              blankFacts={blankFacts}
+            />
+            {lastRun ? (
+              <div ref={reportRef} className="report-anchor">
+                <Report
+                  key={lastRun.id}
+                  run={lastRun}
+                  scope={scope}
+                  onScope={setScope}
+                  onHoverFact={setHoverFact}
+                  draft={draft}
+                  graderLabel={graderLabel}
+                  onEvidence={pointAtQuote}
+                  onOverride={override}
+                  onCoolDown={coolDown}
+                  coolingDisabled={fix?.status === 'loading'}
+                />
+              </div>
+            ) : null}
+            <Runs runs={runs} />
+            {runs.length ? <BeforeYouPost key={runs[0].id} score={current ? current.score : null} onCopy={copyPost} copied={copied} /> : null}
+          </div>
         </div>
-      </div>
+      </main>
 
       <Footer
         share={share}
@@ -540,6 +552,7 @@ export default function App() {
         onFirewallTest={async () => setFwTest(await testFirewall(vault, publicText))}
       />
       <HowItWorks open={howOpen} onClose={() => setHowOpen(false)} />
+      <Toaster />
     </div>
   )
 }

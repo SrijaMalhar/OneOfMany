@@ -54,10 +54,10 @@ flowchart LR
   G --> R --> M --> Draft
 ```
 
-1. **Write.** As you type, the draft is shown like a thermal camera image: deterministic rules and Gemini Nano make each giveaway glow, from cool (a small clue) to white-hot (words the detective actually used against you). On-device inference is free and works offline, so this runs on every pause.
+1. **Write.** As you type, deterministic rules and Gemini Nano underline each giveaway in the draft, from a dotted line for a small clue to red for words the detective actually used against you. Each one can be blurred on the device in one click, with undo. On-device inference is free and works offline, so this runs on every pause.
 2. **Send the detective.** A cloud Gemini model plays a skilled investigator. It sees only the post and returns guesses for ten facts (employer, industry, city, country, team, role, seniority, time at the job, age, gender) with confidence, quoted evidence, and a rough size of the crowd you'd hide in. If you add earlier posts from the same account, it also attacks the draft together with them, because clues add up across posts. The detective steps down automatically (strong model with search, fast model with search, strong model, fast model) and remembers for the session which options were slow or unavailable.
-3. **Private grading.** Gemini Nano compares each guess with your vault, on your device. Synonyms and old names count ("Bangalore" is "Bengaluru"). The file shows one tile per fact: recovered, narrowed down, not recovered, or not in your vault. Wrong guesses are never shown.
-4. **Cool it down.** Nano suggests vaguer wording for each giveaway. Apply the ones you like and watch the draft cool. A **meaning kept** check then compares the rewrite with your original, on your device, so you don't scrub away your own point.
+3. **Private grading.** Gemini Nano compares each guess with your vault, on your device. Synonyms and old names count ("Bangalore" is "Bengaluru"). The detective's file shows one row per fact, marked Found, Close or Missed, plus an exposure score and a ten-cell strip of the same facts. Unknown values and wrong guesses stay under a redaction bar: wrong guesses are never shown. Pointing at a row draws a line back to the words that gave it away.
+4. **Rewrite.** Nano suggests vaguer wording for each giveaway, shown as a diff. Apply the ones you like. A **meaning kept** check then compares the rewrite with your original, on your device, so you don't scrub away your own point.
 5. **Re-test.** Send the detective again. Every run is kept, so you can watch exposure fall run by run.
 
 ---

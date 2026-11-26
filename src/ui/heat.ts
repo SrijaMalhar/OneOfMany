@@ -1,6 +1,6 @@
-// Maps giveaways to a heat level for the thermal view. The scale reads like a
-// thermal camera: cool for small clues, white-hot for the words the detective
-// actually used against you.
+// Maps giveaways to a strength level for the editor and the list: cool for
+// small clues, up to hottest for the words the detective actually used
+// against you.
 
 import { locate } from '../engine/tells'
 import { ATTRIBUTE_LABEL, type Attribute, type DetectiveGuess, type Tell, type TellKind } from '../types'
@@ -39,7 +39,7 @@ const KIND_FOR: Record<Attribute, TellKind> = {
   gender: 'demographic',
 }
 
-/** Detective evidence as spans in the draft, so it can glow and be rewritten. */
+/** Detective evidence as spans in the draft, so it can be marked and rewritten. */
 export function evidenceTells(draft: string, guesses: DetectiveGuess[], minConfidence: number): CitedTell[] {
   const out: CitedTell[] = []
   for (const g of guesses) {

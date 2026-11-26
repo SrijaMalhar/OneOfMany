@@ -2,7 +2,7 @@
 // can't see: timing, devices, accounts and photo metadata.
 
 import { useState } from 'react'
-import { CopyIcon } from './icons'
+import { CheckIcon, CopyIcon } from './icons'
 
 const TIPS = [
   'Post from a device and network you don’t use for work.',
@@ -24,21 +24,27 @@ export function BeforeYouPost({ score, onCopy, copied }: Props) {
   const ready = score != null && score < 25
   const cleared = ready && done.every(Boolean)
   return (
-    <section className="before" aria-labelledby="before-title">
-      {cleared ? (
-        <span className="stamp stamp-cleared" aria-hidden="true">
-          Cleared
-        </span>
-      ) : null}
-      <h3 id="before-title" className="cloud-h3 small-h3">
-        Before you post
-      </h3>
-      <p className="muted">
+    <section className="panel before" aria-labelledby="before-title">
+      <div className="section-head">
+        <h2 id="before-title" className="section-title">
+          Before you post
+        </h2>
+        {cleared ? (
+          <span className="badge badge-good">
+            <CheckIcon /> Ready to post
+          </span>
+        ) : (
+          <span className="small muted tnum">
+            {done.filter(Boolean).length} of {TIPS.length}
+          </span>
+        )}
+      </div>
+      <p className="section-sub">
         {score == null
-          ? 'You’ve changed the post since the last run. Send the detective again to check the new version.'
+          ? 'You’ve changed the post since the last run. Send the detective again to check this version.'
           : ready
-            ? `The post is ${score}% exposed. The words look fine; these are the things the detective can’t see.`
-            : `The post is still ${score}% exposed. Cool down the giveaways first, then come back to this list.`}
+            ? `The words are ${score}% exposed. These are the things the detective can’t see.`
+            : `The post is still ${score}% exposed. Rewrite the giveaways first, then come back to this list.`}
       </p>
       <ul className="tips">
         {TIPS.map((tip, i) => (
@@ -50,10 +56,12 @@ export function BeforeYouPost({ score, onCopy, copied }: Props) {
           </li>
         ))}
       </ul>
-      <button type="button" className="ghost-btn on-light" onClick={onCopy}>
-        <CopyIcon />
-        {copied ? 'Copied' : 'Copy the post'}
-      </button>
+      <div className="actions">
+        <button type="button" className="btn" onClick={onCopy}>
+          <CopyIcon />
+          {copied ? 'Copied' : 'Copy the post'}
+        </button>
+      </div>
     </section>
   )
 }

@@ -1,5 +1,6 @@
 // The vault: who the author really is. It is stored in this browser only and
-// is read by Gemini Nano on this device. Values are masked unless shown.
+// is read on this device. Sealed values show as redaction bars; focusing a
+// field lifts its bar so it can be edited.
 
 import { useState } from 'react'
 import { DEVICE_STATUS_TEXT, type DeviceStatus } from '../ai/device'
@@ -23,66 +24,69 @@ export function Vault({ vault, onChange, device, progress, canDownload, onDownlo
   const set = (a: Attribute, v: string) => onChange({ ...vault, [a]: v })
 
   return (
-    <section className={show ? 'vault is-open' : 'vault'} aria-labelledby="vault-title">
-      <div className="vault-flap" aria-hidden="true">
-        <span className="seal">
-          <LockIcon />
-        </span>
-      </div>
+    <section className="panel" aria-labelledby="vault-title">
       <header className="vault-head">
         <div>
-          <h3 id="vault-title" className="dev-h3">
+          <h2 id="vault-title" className="section-title">
             <LockIcon /> Who you really are
-          </h3>
-          <p className="vault-sub">
-            Sealed in this browser. Only Gemini Nano on this device reads it, to check the detective’s guesses. {filled} of{' '}
-            {ATTRIBUTES.length} filled.
+          </h2>
+          <p className="section-sub">
+            Stored in this browser only, and read only on this device to check the detective’s guesses.{' '}
+            <span className="tnum">
+              {filled} of {ATTRIBUTES.length}
+            </span>{' '}
+            filled.
           </p>
         </div>
-        <button type="button" className="ghost-btn" onClick={() => setShow((v) => !v)} aria-pressed={show}>
+        <button type="button" className="btn btn-sm" onClick={() => setShow((v) => !v)} aria-pressed={show}>
           {show ? <EyeOffIcon /> : <EyeIcon />}
-          {show ? 'Seal it' : 'Open'}
+          {show ? 'Hide' : 'Show'}
         </button>
       </header>
 
       <div className="vault-grid">
-        {ATTRIBUTES.map((a) => (
-          <label key={a} className="vault-field">
-            <span className="vault-label">{ATTRIBUTE_LABEL[a]}</span>
-            <input
-              className={show ? 'vault-input' : 'vault-input is-masked'}
-              value={vault[a] ?? ''}
-              onChange={(e) => set(a, e.target.value)}
-              placeholder={ATTRIBUTE_HINT[a]}
-              autoComplete="off"
-              spellCheck={false}
-              data-1p-ignore
-              data-lpignore="true"
-            />
-          </label>
-        ))}
+        {ATTRIBUTES.map((a) => {
+          const value = vault[a] ?? ''
+          const sealed = !show && value.length > 0
+          return (
+            <label key={a} className="field">
+              <span className="field-label">{ATTRIBUTE_LABEL[a]}</span>
+              <span className="field-control">
+                <input
+                  className={sealed ? 'input is-sealed' : 'input'}
+                  value={value}
+                  onChange={(e) => set(a, e.target.value)}
+                  placeholder={ATTRIBUTE_HINT[a]}
+                  autoComplete="off"
+                  spellCheck={false}
+                  data-1p-ignore
+                  data-lpignore="true"
+                />
+                {sealed ? <span className="redaction" style={{ ['--len' as string]: Math.min(value.length, 40) }} aria-hidden="true" /> : null}
+              </span>
+            </label>
+          )
+        })}
       </div>
 
       <footer className="vault-foot">
-        <div className={`nano nano-${device}`}>
-          <span className="nano-dot" aria-hidden="true" />
-          <span>
-            {DEVICE_STATUS_TEXT[device]}
-            {device === 'downloading' && progress != null ? ` ${Math.round(progress * 100)}%` : ''}
-          </span>
+        <span className={`nano nano-${device}`}>
+          <span className="dot" aria-hidden="true" />
+          {DEVICE_STATUS_TEXT[device]}
+          {device === 'downloading' && progress != null ? <span className="tnum"> {Math.round(progress * 100)}%</span> : null}
           {(device === 'downloadable' || device === 'downloading') && canDownload ? (
-            <button type="button" className="ghost-btn" onClick={onDownload} disabled={device === 'downloading' && progress != null}>
+            <button type="button" className="btn btn-sm" onClick={onDownload} disabled={device === 'downloading' && progress != null}>
               <DownloadIcon />
-              {device === 'downloading' ? 'Resume download' : 'Download on-device model'}
+              {device === 'downloading' ? 'Resume download' : 'Download Gemini Nano'}
             </button>
           ) : null}
-        </div>
+        </span>
         {confirming ? (
-          <span className="forget-confirm" role="group" aria-label="Confirm forgetting">
+          <span className="confirm-inline" role="group" aria-label="Confirm erasing">
             Erase the vault, draft and settings from this browser?
             <button
               type="button"
-              className="danger-btn"
+              className="btn btn-sm btn-danger btn-solid"
               onClick={() => {
                 setConfirming(false)
                 onForget()
@@ -90,12 +94,12 @@ export function Vault({ vault, onChange, device, progress, canDownload, onDownlo
             >
               Erase
             </button>
-            <button type="button" className="ghost-btn" onClick={() => setConfirming(false)}>
+            <button type="button" className="btn btn-sm" onClick={() => setConfirming(false)}>
               Keep
             </button>
           </span>
         ) : (
-          <button type="button" className="link-btn dev-link" onClick={() => setConfirming(true)}>
+          <button type="button" className="btn btn-ghost btn-sm btn-danger" onClick={() => setConfirming(true)}>
             Forget everything
           </button>
         )}

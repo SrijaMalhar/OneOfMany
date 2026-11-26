@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Fact } from '../engine/grade'
-import { Cyclops, type CyclopsState } from './Cyclops'
+import { ArrowUpRightIcon, InfoIcon, LockIcon } from './icons'
 import { Dossier } from './Report'
 
 export type DetectiveState =
@@ -12,7 +12,6 @@ export type DetectiveState =
   | { status: 'error'; error: string }
 
 interface Props {
-  cyclops: CyclopsState
   state: DetectiveState
   words: number
   vaultFacts: number
@@ -28,39 +27,39 @@ interface Props {
 }
 
 const PHASE_TEXT = {
-  detective: 'The detective is reading your post',
-  history: 'Now reading it with your earlier posts',
-  grading: 'Checking the guesses on this device',
+  detective: 'Reading your post',
+  history: 'Reading it with your earlier posts',
+  grading: 'Checking guesses on this device',
 }
 
-export function Detective({ cyclops, state, words, vaultFacts, earlierPosts, confirmed, sample, onConfirm, onSend, blocker, hasRuns, blankFacts }: Props) {
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)
+
+export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, sample, onConfirm, onSend, blocker, hasRuns, blankFacts }: Props) {
   const running = state.status === 'running'
   return (
-    <section className="detective" aria-labelledby="detective-title">
-      <div className="det-head">
-        <Cyclops state={cyclops} />
-        <div>
-          <h2 id="detective-title" className="cloud-h2">
-            The detective
-          </h2>
-          <p className="det-aka">We call it the Cyclops: one eye, and no idea who you are.</p>
-        </div>
+    <section className="section" aria-labelledby="detective-title">
+      <div className="intro">
+        <h2 id="detective-title" className="title">
+          Send a detective after it
+        </h2>
+        <p className="lede">
+          A Gemini model in the cloud reads only your post, the way a stranger would, and tries to work out who wrote it. It
+          never sees your vault, so it has to earn every guess.
+        </p>
       </div>
-      <p className="cloud-lede">
-        A Gemini model in the cloud reads only your post, the way a stranger would, and tries to work out who wrote it. It never
-        sees your vault, so it has to earn every guess.
-      </p>
 
       <dl className="crossing">
-        <div>
-          <dt>Crosses the line</dt>
+        <div className="crossing-out">
+          <ArrowUpRightIcon />
+          <dt>Sent to the cloud</dt>
           <dd>
             Your post, {words} {words === 1 ? 'word' : 'words'}
-            {earlierPosts ? `, plus ${earlierPosts} earlier ${earlierPosts === 1 ? 'post' : 'posts'}` : ''}
+            {earlierPosts ? `, and ${earlierPosts} earlier ${earlierPosts === 1 ? 'post' : 'posts'}` : ''}
           </dd>
         </div>
-        <div>
-          <dt>Stays on your device</dt>
+        <div className="crossing-kept">
+          <LockIcon />
+          <dt>Stays on this device</dt>
           <dd>
             Your vault, {vaultFacts} {vaultFacts === 1 ? 'fact' : 'facts'}
           </dd>
@@ -68,7 +67,10 @@ export function Detective({ cyclops, state, words, vaultFacts, earlierPosts, con
       </dl>
 
       {sample ? (
-        <p className="confirm is-sample">This is a sample story about a fictional person, so there’s nobody real to identify.</p>
+        <p className="confirm is-sample">
+          <InfoIcon />
+          This is a sample story about a fictional person, so there’s nobody real to identify.
+        </p>
       ) : (
         <label className="confirm">
           <input type="checkbox" checked={confirmed} onChange={(e) => onConfirm(e.target.checked)} />
@@ -76,29 +78,48 @@ export function Detective({ cyclops, state, words, vaultFacts, earlierPosts, con
         </label>
       )}
 
-      <div className="send-row">
-        <button type="button" className="send-btn" onClick={onSend} disabled={running || !confirmed || Boolean(blocker)}>
-          {running ? <Elapsed since={state.startedAt} label={PHASE_TEXT[state.phase]} /> : hasRuns ? 'Send the detective again' : 'Send the detective'}
+      <div className="send">
+        <button
+          type="button"
+          className="btn btn-primary btn-lg btn-block"
+          onClick={onSend}
+          disabled={running || !confirmed || Boolean(blocker)}
+          aria-busy={running || undefined}
+        >
+          {running ? (
+            <Elapsed since={state.startedAt} label={PHASE_TEXT[state.phase]} />
+          ) : (
+            <>
+              {hasRuns ? 'Send the detective again' : 'Send the detective'}
+              <span className="kbd-group" aria-hidden="true">
+                <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>
+                <kbd>↵</kbd>
+              </span>
+            </>
+          )}
         </button>
         {blocker && !running ? <p className="send-hint">{blocker}</p> : null}
         {!blocker && !confirmed && !running ? <p className="send-hint">Tick the box above to continue.</p> : null}
       </div>
 
       {state.status === 'error' ? (
-        <p className="error" role="alert">
+        <p className="callout callout-bad" role="alert">
           {state.error}
         </p>
       ) : null}
 
       {!hasRuns ? (
-        <div className="blank-file" aria-label="The detective’s file, still empty">
-          <h3 className="cloud-h3">The detective’s file on you</h3>
-          <p className="muted">
+        <div className="section" aria-label="The detective’s file, still empty">
+          <div className="section-head">
+            <h3 className="section-title">The detective’s file on you</h3>
+            <span className="small muted">{running ? 'Investigating' : 'Empty'}</span>
+          </div>
+          <p className="section-sub">
             {vaultFacts
-              ? 'Empty for now. Send the detective to see which of these it can work out from your words alone.'
-              : 'Empty for now. Fill in your vault on the left, so your device can check which guesses are right.'}
+              ? 'Each line is a fact about you. Send the detective to see which ones it can work out from your words alone.'
+              : 'Fill in your vault on the left, so your device can check which guesses are right.'}
           </p>
-          <Dossier facts={blankFacts} blank />
+          <Dossier facts={blankFacts} blank running={running} />
         </div>
       ) : null}
     </section>

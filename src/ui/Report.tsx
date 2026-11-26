@@ -1,6 +1,7 @@
-// The detective's case file on you. One typed line per fact, stamped Found,
-// Close or Missed. Wrong guesses sit under a redaction bar: they're never
-// shown, so the tool can't be used to confirm a guess about somebody else.
+// The detective's file on you. One row per fact, marked Found, Close or
+// Missed. Unknown values and wrong guesses sit under a redaction bar: wrong
+// guesses are never shown, so the tool can't confirm a guess about somebody
+// else.
 
 import { useState } from 'react'
 import type { Exposure, Fact, FactStatus } from '../engine/grade'
@@ -8,7 +9,6 @@ import { locate } from '../engine/tells'
 import { ATTRIBUTE_LABEL, type Attribute, type DetectiveGuess, type DetectiveReport, type Grade, type Verdict } from '../types'
 import { SourceBadge } from './Badges'
 import { SearchIcon } from './icons'
-import { Crowd } from './Nobody'
 
 export interface RunView {
   report: DetectiveReport
@@ -34,6 +34,8 @@ const STAMP: Record<FactStatus, string> = {
 interface DossierProps {
   facts: Fact[]
   blank?: boolean
+  /** The detective is working: blank rows shimmer. */
+  running?: boolean
   guessFor?: Map<Attribute, DetectiveGuess>
   graded?: Map<Attribute, Grade>
   draft?: string
@@ -42,10 +44,10 @@ interface DossierProps {
   onOverride?: (a: Attribute, v: Verdict) => void
 }
 
-export function Dossier({ facts, blank, guessFor, graded, draft = '', onHover, onEvidence, onOverride }: DossierProps) {
+export function Dossier({ facts, blank, running, guessFor, graded, draft = '', onHover, onEvidence, onOverride }: DossierProps) {
   const [open, setOpen] = useState<Attribute | null>(null)
   return (
-    <ol className={blank ? 'dossier is-blank' : 'dossier'} aria-label="Your facts">
+    <ol className={`dossier${blank ? ' is-blank' : ''}${running ? ' is-running' : ''}`} aria-label="Your facts" aria-busy={running || undefined}>
       {facts.map((f, i) => {
         const g = guessFor?.get(f.attribute)
         const isOpen = open === f.attribute
@@ -77,14 +79,14 @@ export function Dossier({ facts, blank, guessFor, graded, draft = '', onHover, o
                   )
                 ) : hit ? (
                   <>
-                    {g?.guess}
-                    <span className="dz-conf" title={`Detective’s confidence ${g?.confidence ?? 0}%`}>
-                      {g?.confidence ?? 0}% sure
+                    <span className="dz-guess">{g?.guess}</span>
+                    <span className="dz-conf" data-tip="The detective’s own confidence">
+                      {g?.confidence ?? 0}%
                     </span>
                   </>
                 ) : f.status === 'safe' ? (
                   g && g.confidence > 0 ? (
-                    <span className="redacted" title="A wrong guess, hidden on purpose">
+                    <span className="redacted" data-tip="A wrong guess, hidden on purpose">
                       wrong guess
                     </span>
                   ) : (
@@ -94,7 +96,7 @@ export function Dossier({ facts, blank, guessFor, graded, draft = '', onHover, o
                   <span className="dz-muted">Not in your vault</span>
                 )}
               </span>
-              {!blank && STAMP[f.status] ? <span className={`stamp stamp-${f.status}`}>{STAMP[f.status]}</span> : null}
+              {!blank && STAMP[f.status] ? <span className={`result result-${f.status}`}>{STAMP[f.status]}</span> : <span />}
             </button>
             {isOpen && !blank ? (
               <Details fact={f} guess={g} grade={graded?.get(f.attribute)} draft={draft} onEvidence={onEvidence} onOverride={onOverride} />
@@ -135,7 +137,7 @@ function Details({
       ) : null}
       {hit && guess?.evidence.length ? (
         <p className="evidence">
-          <span className="muted">Gave it away:</span>
+          <span>Gave it away:</span>
           {guess.evidence.map((q) =>
             locate(draft, q) >= 0 ? (
               <button key={q} type="button" className="quote" onClick={() => onEvidence?.(q)}>
@@ -150,7 +152,7 @@ function Details({
         </p>
       ) : null}
       <div className="override">
-        <span className="muted small">Checked by {by} on this device. Not right? Mark it as</span>
+        <span>Checked by {by} on this device. Not right? Mark it</span>
         {(
           [
             ['exact', 'Found'],
@@ -205,45 +207,58 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
 
   return (
     <article className="file" aria-labelledby="file-title">
-      <span className="file-tab" aria-hidden="true">
-        Case file: Nobody
-      </span>
       <header className="file-head">
-        <h3 id="file-title" className="cloud-h3">
-          The detective’s file on you
-        </h3>
+        <div className="section-head">
+          <h2 id="file-title" className="section-title">
+            The detective’s file on you
+          </h2>
+          {run.history ? (
+            <div className="segmented" role="tablist" aria-label="Which text the detective read">
+              <button type="button" role="tab" aria-selected={scope === 'alone'} onClick={() => onScope('alone')}>
+                This post <b>{run.exposure.score}%</b>
+              </button>
+              <button type="button" role="tab" aria-selected={scope === 'history'} onClick={() => onScope('history')}>
+                With {run.history.posts} earlier <b>{run.history.exposure.score}%</b>
+              </button>
+            </div>
+          ) : null}
+        </div>
         <div className="file-badges">
-          <SourceBadge source="in_cloud" label={`Guessed by ${view.report.model}, ${seconds(view.report.ms)}`} />
+          <SourceBadge source="in_cloud" label={`Guessed by ${view.report.model} in ${seconds(view.report.ms)}`} />
           <SourceBadge source={graderLabel === 'Gemini Nano' ? 'on_device' : 'rule'} label={`Checked by ${graderLabel} on this device`} />
         </div>
       </header>
 
-      {run.history ? (
-        <div className="scope" role="tablist" aria-label="Which text the detective read">
-          <button type="button" role="tab" aria-selected={scope === 'alone'} onClick={() => onScope('alone')}>
-            This post alone <b>{run.exposure.score}%</b>
-          </button>
-          <button type="button" role="tab" aria-selected={scope === 'history'} onClick={() => onScope('history')}>
-            With {run.history.posts} earlier {run.history.posts === 1 ? 'post' : 'posts'} <b>{run.history.exposure.score}%</b>
-          </button>
-        </div>
-      ) : null}
-
-      <div className="verdict">
-        <div className={`exposure exposure-${e.level}`}>
-          <span className="exposure-n">{e.score}%</span>
-          <span className="exposure-label">exposed</span>
+      <div className={`panel verdict lvl-${e.level}`}>
+        <div className="score">
+          <span className="score-n">
+            {e.score}
+            <span className="score-pct">%</span>
+          </span>
+          <span className="score-label">exposed</span>
         </div>
         <p className="verdict-text">
-          {e.considered === 0
-            ? 'Fill in your vault to see which guesses were right.'
-            : `It recovered ${e.exposed} of your ${e.considered} facts${e.partial ? ` and narrowed down ${e.partial} more` : ''}.`}{' '}
+          {e.considered === 0 ? (
+            'Fill in your vault to see which guesses were right.'
+          ) : (
+            <>
+              It worked out <strong>{e.exposed}</strong> of your {e.considered} facts
+              {e.partial ? (
+                <>
+                  {' '}
+                  and narrowed down <strong>{e.partial}</strong> more
+                </>
+              ) : null}
+              .
+            </>
+          )}{' '}
           {view.report.crowdSize ? (
             <>
-              Its guess at the crowd you’d hide in: <strong>{view.report.crowdSize}</strong>.
+              Its estimate of the crowd you’d hide in: <strong>{view.report.crowdSize}</strong>.
             </>
           ) : null}
         </p>
+        <FactStrip facts={e.facts} />
       </div>
 
       <Dossier
@@ -255,26 +270,51 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
         onEvidence={onEvidence}
         onOverride={(a, v) => onOverride(a, v, scope)}
       />
-      <p className="muted small dz-hint">Select a line to see why, what gave it away, or to correct it.</p>
-
-      <Crowd recovered={e.exposed} narrowed={e.partial} />
+      <p className="small muted">Select a row to see why, what gave it away, or to correct it. Point at a row to trace it back to your words.</p>
 
       {view.report.nextStep ? (
         <div className="next">
-          <h4 className="group-title">What an investigator would check next</h4>
+          <h4>What an investigator would check next</h4>
           <p>{view.report.nextStep}</p>
         </div>
       ) : null}
 
       <SearchTrail report={view.report} />
 
-      <div className="file-cta">
-        <button type="button" className="hot-btn" onClick={onCoolDown} disabled={coolingDisabled}>
-          Cool down these giveaways
+      <div className="actions">
+        <button type="button" className="btn btn-primary" onClick={onCoolDown} disabled={coolingDisabled}>
+          Suggest rewrites
         </button>
-        <span className="muted small">Rewrites are chosen from the detective’s evidence, never from your vault.</span>
+        <span className="small muted">Chosen from the detective’s evidence, never from your vault.</span>
       </div>
     </article>
+  )
+}
+
+function FactStrip({ facts }: { facts: Fact[] }) {
+  const n = (s: FactStatus) => facts.filter((f) => f.status === s).length
+  return (
+    <div className="strip-wrap">
+      <div className="strip" role="img" aria-label={`${n('recovered')} found, ${n('narrowed')} close, ${n('safe')} missed`}>
+        {facts.map((f) => (
+          <span key={f.attribute} className={`strip-cell strip-${f.status}`} data-tip={`${ATTRIBUTE_LABEL[f.attribute]}: ${STAMP[f.status] || 'not in your vault'}`} />
+        ))}
+      </div>
+      <div className="strip-legend">
+        <span>
+          <span className="swatch swatch-hottest" aria-hidden="true" />
+          Found <b>{n('recovered')}</b>
+        </span>
+        <span>
+          <span className="swatch swatch-warm" aria-hidden="true" />
+          Close <b>{n('narrowed')}</b>
+        </span>
+        <span>
+          <span className="swatch strip-safe" aria-hidden="true" />
+          Missed <b>{n('safe')}</b>
+        </span>
+      </div>
+    </div>
   )
 }
 
@@ -282,14 +322,14 @@ function SearchTrail({ report }: { report: DetectiveReport }) {
   const found = report.searchQueries.length || report.sources.length || report.searchEntryPointHtml
   if (report.usedSearch && !found) {
     return (
-      <p className="trail-note muted small">
+      <p className="trail-note small muted">
         <SearchIcon /> Web search was available, but the detective didn’t need it for this post.
       </p>
     )
   }
   if (!report.usedSearch) {
     return (
-      <p className="trail-note muted small">
+      <p className="trail-note small muted">
         <SearchIcon /> This run worked from the text alone. Live web search needs the Firebase Blaze plan, which this deployment
         doesn’t use, so a real investigator with a search engine could do better.
       </p>
@@ -297,7 +337,7 @@ function SearchTrail({ report }: { report: DetectiveReport }) {
   }
   return (
     <div className="trail">
-      <h4 className="group-title">
+      <h4>
         <SearchIcon /> What it searched
       </h4>
       {report.searchQueries.length ? (
@@ -335,28 +375,33 @@ export function Runs({ runs }: { runs: Run[] }) {
   const first = runs[0].exposure.score
   const last = runs[runs.length - 1].exposure.score
   return (
-    <section className="runs" aria-labelledby="runs-title">
-      <h3 id="runs-title" className="cloud-h3 small-h3">
-        Every run
-      </h3>
-      <ol className="run-list">
+    <section className="section" aria-labelledby="runs-title">
+      <div className="section-head">
+        <h2 id="runs-title" className="section-title">
+          Every run
+        </h2>
+        {last < first ? (
+          <span className="badge badge-good tnum">
+            {first}% to {last}%
+          </span>
+        ) : null}
+      </div>
+      <ol className="list">
         {runs.map((r, i) => (
           <li key={r.id} className="run">
             <span className="run-name">
               Run {i + 1}
-              <span className="muted small">{i === 0 ? 'original draft' : r.fixesBefore ? `after ${r.fixesBefore} ${r.fixesBefore === 1 ? 'rewrite' : 'rewrites'}` : 'edited draft'}</span>
+              <span className="small muted">{i === 0 ? 'Original draft' : r.fixesBefore ? `After ${r.fixesBefore} ${r.fixesBefore === 1 ? 'rewrite' : 'rewrites'}` : 'Edited draft'}</span>
             </span>
             <MiniStrip facts={r.exposure.facts} />
             <span className="run-bar" aria-hidden="true">
-              <span className={`exposure-${r.exposure.level}`} style={{ width: `${Math.max(2, r.exposure.score)}%` }} />
+              <span className={`lvl-${r.exposure.level}`} style={{ width: `${Math.max(2, r.exposure.score)}%` }} />
             </span>
             <span className="run-score">{r.exposure.score}%</span>
           </li>
         ))}
       </ol>
-      <p className="muted small">
-        {last < first ? `Exposure went from ${first}% to ${last}%. ` : ''}One run is one sample, so results vary a little each time.
-      </p>
+      <p className="small muted">One run is one sample, so results vary a little each time.</p>
     </section>
   )
 }

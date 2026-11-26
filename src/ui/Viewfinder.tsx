@@ -1,6 +1,6 @@
-// The draft, seen through a thermal camera. A transparent textarea sits
-// exactly on top of a mirror that renders the same text with the giveaways
-// glowing underneath, so typing feels like a normal editor.
+// The draft editor. A transparent textarea sits exactly on top of a mirror
+// that renders the same text with the giveaways underlined, so typing feels
+// like a normal editor while the highlights stay in place.
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { HEAT_LABEL, type Heat, type HeatTell } from './heat'
@@ -11,7 +11,7 @@ interface Props {
   tells: HeatTell[]
   /** Span to point at, e.g. after clicking a giveaway or a piece of evidence. */
   focus: { start: number; end: number; nonce: number } | null
-  /** Bumped when a whole new draft is loaded, to replay the warm-up. */
+  /** Bumped when a whole new draft is loaded, to replay the highlight fade-in. */
   warmKey: number
   footer: ReactNode
   readOnly?: boolean
@@ -21,15 +21,15 @@ interface Props {
   onSubmit?: () => void
 }
 
-const HEATS: Heat[] = ['cool', 'warm', 'hot', 'hottest']
+const HEATS: Heat[] = ['hottest', 'hot', 'warm', 'cool']
 
 export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, readOnly, linked, onSubmit }: Props) {
   const mirrorRef = useRef<HTMLDivElement>(null)
-  // The glows "warm up" once when a whole new draft arrives, not while typing.
+  // Highlights fade in once when a whole new draft arrives, not while typing.
   const [warmed, setWarmed] = useState(-1)
   const warming = warmed !== warmKey
   useEffect(() => {
-    const t = setTimeout(() => setWarmed(warmKey), 2600)
+    const t = setTimeout(() => setWarmed(warmKey), 900)
     return () => clearTimeout(t)
   }, [warmKey])
   const focusedIndex = focus ? tells.findIndex((t) => t.start < focus.end && t.end > focus.start) : -1
@@ -69,10 +69,6 @@ export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, rea
   return (
     <section className="vf" aria-label="Your draft">
       <div className="vf-frame">
-        <span className="vf-corner tl" aria-hidden="true" />
-        <span className="vf-corner tr" aria-hidden="true" />
-        <span className="vf-corner bl" aria-hidden="true" />
-        <span className="vf-corner br" aria-hidden="true" />
         <div className="vf-stack">
           <div ref={mirrorRef} key={warmKey} className={warming ? 'vf-mirror vf-warming' : 'vf-mirror'} aria-hidden="true">
             {segments}
@@ -95,16 +91,20 @@ export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, rea
           />
         </div>
       </div>
-      <div className="vf-foot">
-        <div className="vf-scale" aria-label="Heat scale">
-          {HEATS.map((h, i) => (
-            <span key={h} className={`vf-swatch heat-${h}`} title={HEAT_LABEL[h]}>
-              <span className="vf-swatch-dot" />
-              {HEAT_LABEL[h]}
-              <span className="vf-swatch-n">{counts[i]}</span>
-            </span>
-          ))}
-        </div>
+      <div className="vf-bar">
+        {tells.length ? (
+          <div className="vf-legend" aria-label="Giveaways by strength">
+            {HEATS.map((h, i) =>
+              counts[i] ? (
+                <span key={h} className="vf-legend-item">
+                  <span className={`swatch swatch-${h}`} aria-hidden="true" />
+                  {HEAT_LABEL[h]}
+                  <b>{counts[i]}</b>
+                </span>
+              ) : null,
+            )}
+          </div>
+        ) : null}
         <div className="vf-status">{footer}</div>
       </div>
     </section>

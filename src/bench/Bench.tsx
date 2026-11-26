@@ -106,18 +106,20 @@ export default function Bench() {
 
   return (
     <div className="bench">
-      <header className="bench-top">
+      <header className="topbar">
         <a className="brand" href="#">
-          <Mark size={30} />
-          <span className="brand-name">OneOfMany</span>
+          <Mark size={20} />
+          <span>OneOfMany</span>
         </a>
-        <a className="bench-back" href="#">
-          Back to the app
-        </a>
+        <nav className="topbar-actions">
+          <a className="btn btn-ghost btn-sm" href="#">
+            Back to the app
+          </a>
+        </nav>
       </header>
 
       <main className="bench-main">
-        <h1 className="cloud-h2">Benchmark</h1>
+        <h1 className="title">Benchmark</h1>
         <p className="bench-lede">
           {BENCH_CASES.length} fictional people, each with an anonymous post they might write and the truth about them. For every
           post the detective attacks, every suggested rewrite is applied, and the detective attacks again. Guesses are graded by the
@@ -125,19 +127,19 @@ export default function Bench() {
           like real ones.
         </p>
 
-        <div className="bench-actions">
+        <div className="actions">
           {running ? (
-            <button type="button" className="send-btn" onClick={() => (stop.current = true)}>
+            <button type="button" className="btn btn-primary" onClick={() => (stop.current = true)}>
               Pause after this post
             </button>
           ) : (
-            <button type="button" className="send-btn" disabled={!todo.length || !isConfigured} onClick={start}>
+            <button type="button" className="btn btn-primary" disabled={!todo.length || !isConfigured} onClick={start}>
               {rows.length ? `Continue (${todo.length} left)` : 'Run the benchmark'}
             </button>
           )}
           <button
             type="button"
-            className="ghost-btn on-light"
+            className="btn"
             disabled={!rows.length || running}
             onClick={async () => {
               await navigator.clipboard.writeText(toMarkdown(sorted, summary))
@@ -147,15 +149,15 @@ export default function Bench() {
           >
             {copied ? 'Copied' : 'Copy as Markdown'}
           </button>
-          <button type="button" className="ghost-btn on-light" disabled={!rows.length || running} onClick={download}>
+          <button type="button" className="btn" disabled={!rows.length || running} onClick={download}>
             Download JSON
           </button>
           {confirmClear ? (
-            <span className="bench-confirm">
+            <span className="confirm-inline">
               Clear all results?
               <button
                 type="button"
-                className="danger-btn"
+                className="btn btn-sm btn-danger btn-solid"
                 onClick={() => {
                   setRows([])
                   setConfirmClear(false)
@@ -163,17 +165,17 @@ export default function Bench() {
               >
                 Clear
               </button>
-              <button type="button" className="ghost-btn on-light" onClick={() => setConfirmClear(false)}>
+              <button type="button" className="btn" onClick={() => setConfirmClear(false)}>
                 Keep
               </button>
             </span>
           ) : (
-            <button type="button" className="link-btn cloud-link" disabled={!rows.length || running} onClick={() => setConfirmClear(true)}>
+            <button type="button" className="btn btn-ghost btn-danger" disabled={!rows.length || running} onClick={() => setConfirmClear(true)}>
               Clear results
             </button>
           )}
         </div>
-        <p className="muted small">
+        <p className="small muted">
           {!isConfigured
             ? 'Connect Firebase (see the README) to run the benchmark.'
             : current
@@ -217,7 +219,7 @@ export default function Bench() {
         {ok.length ? (
           <figure className="dumbbell">
             <figcaption>
-              <span className="cloud-h3 small-h3">Exposure before and after the rewrites</span>
+              <span className="section-title">Exposure before and after the rewrites</span>
               <span className="legend">
                 <span className="key key-before" /> Before
                 <span className="key key-after" /> After

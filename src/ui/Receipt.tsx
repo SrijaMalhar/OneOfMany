@@ -40,17 +40,17 @@ export function Receipt({ open, onClose, records, audit, onFirewallTest, firewal
   }, [open])
 
   return (
-    <dialog ref={ref} className="drawer" onClose={onClose} aria-labelledby="receipt-title" onClick={(e) => e.target === ref.current && onClose()}>
-      <div className="drawer-body">
-        <header className="drawer-head">
-          <h2 id="receipt-title" className="cloud-h2">
-            Cloud receipt
-          </h2>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
-            <CloseIcon />
-          </button>
-        </header>
-        <p className="muted">Every AI call in this tab, where it actually ran, and exactly what it carried. Nothing here is stored anywhere else.</p>
+    <dialog ref={ref} className="sheet" onClose={onClose} aria-labelledby="receipt-title" onClick={(e) => e.target === ref.current && onClose()}>
+      <header className="dialog-head">
+        <h2 id="receipt-title" className="dialog-title">
+          Receipt
+        </h2>
+        <button type="button" className="btn btn-ghost btn-sm btn-icon" onClick={onClose} aria-label="Close">
+          <CloseIcon />
+        </button>
+      </header>
+      <div className="dialog-body">
+        <p>Every AI call in this tab, where it actually ran, and exactly what it carried. Nothing here is stored anywhere else.</p>
 
         <dl className="totals">
           <div>
@@ -72,11 +72,11 @@ export function Receipt({ open, onClose, records, audit, onFirewallTest, firewal
         </dl>
 
         <div className="fw-test">
-          <button type="button" className="ghost-btn on-light" onClick={onFirewallTest}>
+          <button type="button" className="btn btn-sm" onClick={onFirewallTest}>
             <ShieldIcon />
             Run firewall test
           </button>
-          <span className="muted small">
+          <span className="small muted">
             {firewallTest == null
               ? 'Tries to send one of your vault values through the real firewall, to a stub that can’t reach the network.'
               : firewallTest.outcome === 'blocked'
@@ -87,7 +87,7 @@ export function Receipt({ open, onClose, records, audit, onFirewallTest, firewal
           </span>
         </div>
 
-        {records.length === 0 ? <p className="muted empty">No AI calls yet. Write a draft or load a story to start.</p> : null}
+        {records.length === 0 ? <p className="callout">No AI calls yet. Write a draft or load a story to start.</p> : null}
 
         <ol className="calls">
           {records.map((r) => (
@@ -101,7 +101,7 @@ export function Receipt({ open, onClose, records, audit, onFirewallTest, firewal
                 <span className="call-ms">{r.status === 'running' ? 'running' : r.ms != null ? `${(r.ms / 1000).toFixed(1)} s` : ''}</span>
               </div>
               <div className="call-meta">
-                <span>{r.model}</span>
+                <span className="mono">{r.model}</span>
                 <span>
                   Firewall:{' '}
                   {r.firewall === 'passed' ? 'checked, no vault values' : r.firewall === 'blocked' ? 'blocked before sending' : 'not needed, device only'}
