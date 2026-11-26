@@ -1,14 +1,18 @@
-// Two pages: the app, and the benchmark at #bench.
+// Three pages: the front door, the tool at #check, and the benchmark at #bench.
 
 import { lazy, Suspense, useEffect, useState } from 'react'
 import App from './App'
+import { Intro } from './ui/Intro'
 
 const Bench = lazy(() => import('./bench/Bench'))
 
 export default function Root() {
   const [hash, setHash] = useState(() => location.hash)
   useEffect(() => {
-    const on = () => setHash(location.hash)
+    const on = () => {
+      setHash(location.hash)
+      scrollTo(0, 0)
+    }
     addEventListener('hashchange', on)
     return () => removeEventListener('hashchange', on)
   }, [])
@@ -19,6 +23,6 @@ export default function Root() {
       </Suspense>
     )
   }
-  return <App />
+  if (hash === '#check') return <App />
+  return <Intro onStart={() => (location.hash = 'check')} />
 }
-

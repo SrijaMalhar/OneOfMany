@@ -112,7 +112,7 @@ export default function Bench() {
           <span>OneOfMany</span>
         </a>
         <nav className="topbar-actions">
-          <a className="btn btn-ghost btn-sm" href="#">
+          <a className="btn btn-ghost btn-sm" href="#check">
             Back to the app
           </a>
         </nav>

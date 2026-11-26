@@ -3,7 +3,7 @@
 // guesses are never shown, so the tool can't confirm a guess about somebody
 // else.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Exposure, Fact, FactStatus } from '../engine/grade'
 import { locate } from '../engine/tells'
 import { ATTRIBUTE_LABEL, type Attribute, type DetectiveGuess, type DetectiveReport, type Grade, type Verdict } from '../types'
@@ -24,6 +24,56 @@ export interface Run extends RunView {
   history?: RunView & { posts: number }
 }
 
+// The file opens like a decoded document: each row starts under a redaction
+// bar, the guess resolves letter by letter, then the result is stamped. It
+// runs once, when a new run arrives, and not at all with reduced motion.
+const REVEAL_START = 180
+const ROW_MS = 150
+const DECODE_MS = 420
+const GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789'
+
+function revealTotal(rows: number) {
+  return REVEAL_START + rows * ROW_MS + DECODE_MS
+}
+
+function useTimeline(total: number): number {
+  const [t, setT] = useState(() => (matchMedia('(prefers-reduced-motion: reduce)').matches ? Infinity : 0))
+  useEffect(() => {
+    if (t === Infinity) return
+    let raf = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const elapsed = now - start
+      if (elapsed >= total) return setT(Infinity)
+      setT(elapsed)
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    // A background tab may never paint; don't leave the file under bars.
+    const fallback = setTimeout(() => setT(Infinity), total + 600)
+    return () => {
+      cancelAnimationFrame(raf)
+      clearTimeout(fallback)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return t
+}
+
+function rowPhase(t: number, i: number): 'hidden' | 'decoding' | 'shown' {
+  const start = REVEAL_START + i * ROW_MS
+  if (t >= start + DECODE_MS) return 'shown'
+  return t >= start ? 'decoding' : 'hidden'
+}
+
+function decode(text: string, progress: number) {
+  const locked = Math.floor(text.length * progress)
+  let out = text.slice(0, locked)
+  for (let k = locked; k < text.length; k++) {
+    out += /\s/.test(text[k]) ? text[k] : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
+  }
+  return out
+}
+
 const STAMP: Record<FactStatus, string> = {
   recovered: 'Found',
   narrowed: 'Close',
@@ -42,17 +92,25 @@ interface DossierProps {
   onHover?: (a: Attribute | null) => void
   onEvidence?: (q: string) => void
   onOverride?: (a: Attribute, v: Verdict) => void
+  /** Milliseconds into the opening reveal; Infinity once it's over. */
+  reveal?: number
 }
 
-export function Dossier({ facts, blank, running, guessFor, graded, draft = '', onHover, onEvidence, onOverride }: DossierProps) {
+export function Dossier({ facts, blank, running, guessFor, graded, draft = '', onHover, onEvidence, onOverride, reveal = Infinity }: DossierProps) {
   const [open, setOpen] = useState<Attribute | null>(null)
+  const revealing = reveal !== Infinity
   return (
-    <ol className={`dossier${blank ? ' is-blank' : ''}${running ? ' is-running' : ''}`} aria-label="Your facts" aria-busy={running || undefined}>
+    <ol
+      className={`dossier${blank ? ' is-blank' : ''}${running ? ' is-running' : ''}`}
+      aria-label="Your facts"
+      aria-busy={running || revealing || undefined}
+    >
       {facts.map((f, i) => {
         const g = guessFor?.get(f.attribute)
         const isOpen = open === f.attribute
         const hit = f.status === 'recovered' || f.status === 'narrowed'
-        const status = blank ? (f.status === 'empty' ? 'empty' : 'unknown') : f.status
+        const phase = blank ? 'shown' : rowPhase(reveal, i)
+        const status = blank || phase === 'hidden' ? (f.status === 'empty' ? 'empty' : 'unknown') : f.status
         return (
           <li
             key={f.attribute}
@@ -71,12 +129,16 @@ export function Dossier({ facts, blank, running, guessFor, graded, draft = '', o
             >
               <span className="dz-label">{ATTRIBUTE_LABEL[f.attribute]}</span>
               <span className="dz-value">
-                {blank ? (
+                {blank || phase === 'hidden' ? (
                   f.status === 'empty' ? (
                     <span className="dz-muted">Not in your vault</span>
                   ) : (
                     <span className="dz-blank" aria-label="Unknown" />
                   )
+                ) : hit && phase === 'decoding' ? (
+                  <span className="dz-guess is-decoding" aria-label={g?.guess}>
+                    {decode(g?.guess ?? '', (reveal - REVEAL_START - i * ROW_MS) / DECODE_MS)}
+                  </span>
                 ) : hit ? (
                   <>
                     <span className="dz-guess">{g?.guess}</span>
@@ -96,7 +158,11 @@ export function Dossier({ facts, blank, running, guessFor, graded, draft = '', o
                   <span className="dz-muted">Not in your vault</span>
                 )}
               </span>
-              {!blank && STAMP[f.status] ? <span className={`result result-${f.status}`}>{STAMP[f.status]}</span> : <span />}
+              {!blank && phase === 'shown' && STAMP[f.status] ? (
+                <span className={`result result-${f.status}${revealing ? ' is-stamping' : ''}`}>{STAMP[f.status]}</span>
+              ) : (
+                <span />
+              )}
             </button>
             {isOpen && !blank ? (
               <Details fact={f} guess={g} grade={graded?.get(f.attribute)} draft={draft} onEvidence={onEvidence} onOverride={onOverride} />
@@ -204,6 +270,9 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
   const e = view.exposure
   const guessFor = new Map(view.report.guesses.map((g) => [g.attribute, g]))
   const graded = new Map(view.grades.map((g) => [g.attribute, g]))
+  const t = useTimeline(revealTotal(e.facts.length))
+  const counted = t === Infinity ? 1 : Math.min(1, Math.max(0, (t - REVEAL_START) / (e.facts.length * ROW_MS + DECODE_MS)))
+  const shownScore = Math.round(e.score * (1 - (1 - counted) ** 3))
 
   return (
     <article className="file" aria-labelledby="file-title">
@@ -231,8 +300,8 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
 
       <div className={`panel verdict lvl-${e.level}`}>
         <div className="score">
-          <span className="score-n">
-            {e.score}
+          <span className="score-n" aria-label={`${e.score}%`}>
+            {shownScore}
             <span className="score-pct">%</span>
           </span>
           <span className="score-label">exposed</span>
@@ -258,7 +327,7 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
             </>
           ) : null}
         </p>
-        <FactStrip facts={e.facts} />
+        <FactStrip facts={e.facts} reveal={t} />
       </div>
 
       <Dossier
@@ -269,6 +338,7 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
         onHover={onHoverFact}
         onEvidence={onEvidence}
         onOverride={(a, v) => onOverride(a, v, scope)}
+        reveal={t}
       />
       <p className="small muted">Select a row to see why, what gave it away, or to correct it. Point at a row to trace it back to your words.</p>
 
@@ -291,13 +361,16 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
   )
 }
 
-function FactStrip({ facts }: { facts: Fact[] }) {
+function FactStrip({ facts, reveal = Infinity }: { facts: Fact[]; reveal?: number }) {
   const n = (s: FactStatus) => facts.filter((f) => f.status === s).length
   return (
     <div className="strip-wrap">
       <div className="strip" role="img" aria-label={`${n('recovered')} found, ${n('narrowed')} close, ${n('safe')} missed`}>
         {facts.map((f) => (
-          <span key={f.attribute} className={`strip-cell strip-${f.status}`} data-tip={`${ATTRIBUTE_LABEL[f.attribute]}: ${STAMP[f.status] || 'not in your vault'}`} />
+          <span
+            key={f.attribute}
+            className={`strip-cell strip-${rowPhase(reveal, facts.indexOf(f)) === 'shown' ? f.status : 'pending'}`}
+            data-tip={`${ATTRIBUTE_LABEL[f.attribute]}: ${STAMP[f.status] || 'not in your vault'}`} />
         ))}
       </div>
       <div className="strip-legend">

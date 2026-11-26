@@ -238,7 +238,8 @@ src/
   ai/          one model per job, the firewall check, the device-only guard, prompts, schemas, the receipt
   engine/      deterministic and tested, no AI: giveaways, grading, firewall, fixes, meaning kept
   bench/       30 fictional cases, the runner and the benchmark page
-  ui/          editor, giveaways, vault, detective, file, rewrites, receipt, How it works
+  ui/          front door, editor, giveaways, vault, detective, file, rewrites, receipt, How it works
+  Root.tsx     routes: the front door, the tool at #check, the benchmark at #bench
   App.tsx      the two panes: this device and the cloud
   firebase.ts  App Check, AI Logic, Auth, Firestore, Remote Config
   store.ts     local vault, session drafts, opt-in counters
@@ -266,7 +267,7 @@ We'd rather name these than have you find them:
   <img align="right" width="128" src="docs/readme/nobody.svg" alt="Nobody, a sheep in a small violet mask">
 </picture>
 
-In the Odyssey, Odysseus tells the one-eyed Cyclops that his name is Nobody, then slips out of the cave hidden among the flock. OneOfMany does the same for your post: the cloud detective gets your words, never your name, and you leave as one of many. The sheep in the mask is Nobody.
+In the Odyssey, Odysseus tells the one-eyed Cyclops that his name is Nobody, then slips out of the cave hidden among the flock. OneOfMany does the same for your post: the cloud detective gets your words, never your name, and you leave as one of many. The sheep in the mask is Nobody. On the app's front page, a crowd of sheep thins out one detail at a time until only Nobody is left.
 
 <br clear="right">
 
