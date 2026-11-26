@@ -17,11 +17,13 @@ interface Props {
   readOnly?: boolean
   /** A fact being pointed at in the detective's file. */
   linked?: string | null
+  /** Cmd/Ctrl+Enter. */
+  onSubmit?: () => void
 }
 
 const HEATS: Heat[] = ['cool', 'warm', 'hot', 'hottest']
 
-export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, readOnly, linked }: Props) {
+export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, readOnly, linked, onSubmit }: Props) {
   const mirrorRef = useRef<HTMLDivElement>(null)
   // The glows "warm up" once when a whole new draft arrives, not while typing.
   const [warmed, setWarmed] = useState(-1)
@@ -79,10 +81,17 @@ export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, rea
             className="vf-input"
             value={draft}
             onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (onSubmit && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault()
+                onSubmit()
+              }
+            }}
             placeholder="Paste or write the post you want to publish anonymously."
             spellCheck={false}
             readOnly={readOnly}
             aria-label="Your draft post"
+            aria-keyshortcuts="Control+Enter Meta+Enter"
           />
         </div>
       </div>

@@ -344,7 +344,7 @@ export function Runs({ runs }: { runs: Run[] }) {
           <li key={r.id} className="run">
             <span className="run-name">
               Run {i + 1}
-              <span className="muted small">{i === 0 ? 'original draft' : r.fixesBefore ? `after ${r.fixesBefore} rewrites` : 'edited draft'}</span>
+              <span className="muted small">{i === 0 ? 'original draft' : r.fixesBefore ? `after ${r.fixesBefore} ${r.fixesBefore === 1 ? 'rewrite' : 'rewrites'}` : 'edited draft'}</span>
             </span>
             <MiniStrip facts={r.exposure.facts} />
             <span className="run-bar" aria-hidden="true">

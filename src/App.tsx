@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { audit as auditRecords } from './ai/receipt'
 import { prepareDeviceModel } from './ai/models'
 import { checkMeaning, findTells, gradePrivately, runDetective, suggestFixes, testFirewall, type FirewallTestResult } from './ai/tasks'
+import { blurSpan, replaceSpan } from './engine/blur'
 import { applyFixes, cluesToRewrite } from './engine/fixes'
 import { exposure, type Fact } from './engine/grade'
 import { contentWords } from './engine/meaning'
@@ -24,6 +25,7 @@ import {
   type Counts,
 } from './store'
 import { ATTRIBUTES, type Attribute, type Grade, type Profile, type Source, type Verdict } from './types'
+import { BeforeYouPost } from './ui/BeforeYouPost'
 import { Detective, type DetectiveState } from './ui/Detective'
 import { EarlierPosts } from './ui/EarlierPosts'
 import { friendly } from './ui/errors'
@@ -73,6 +75,11 @@ export default function App() {
   const setDraft = (d: string) => {
     setDraftState(d)
     saveDraft(d)
+  }
+  const [undo, setUndo] = useState<string | null>(null)
+  const typeDraft = (d: string) => {
+    setUndo(null)
+    setDraft(d)
   }
   const [earlier, setEarlier] = useState<string[]>([])
   const earlierPosts = earlier.map((p) => p.trim()).filter(Boolean)
@@ -210,6 +217,25 @@ export default function App() {
   const [meaning, setMeaning] = useState<MeaningState>(null)
   const [copied, setCopied] = useState(false)
   const fixesRef = useRef<HTMLDivElement>(null)
+
+  const copyPost = async () => {
+    try {
+      await navigator.clipboard.writeText(draft)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    } catch {
+      /* clipboard blocked; the text is still in the editor */
+    }
+  }
+
+  // "Blur it": an instant, deterministic rewrite on this device.
+  const quickBlur = (t: { start: number; end: number; text: string }) => {
+    const b = blurSpan(draft, t)
+    if (!b) return
+    setUndo(draft)
+    setDraft(replaceSpan(draft, b.start, b.end, b.replacement))
+    setFixesSinceRun((n) => n + 1)
+  }
 
   const coolDown = async () => {
     if (!lastRun) return
@@ -356,6 +382,19 @@ export default function App() {
             Deep scan in the cloud
           </button>
         ) : null}
+        {undo != null ? (
+          <button
+            type="button"
+            className="ghost-btn"
+            onClick={() => {
+              setDraft(undo)
+              setUndo(null)
+              setFixesSinceRun((n) => Math.max(0, n - 1))
+            }}
+          >
+            Undo blur
+          </button>
+        ) : null}
         {scan.status === 'error' ? <span className="vf-error">{scan.error}</span> : null}
       </>
     )
@@ -391,7 +430,10 @@ export default function App() {
 
           <Viewfinder
             draft={draft}
-            onChange={setDraft}
+            onChange={typeDraft}
+            onSubmit={() => {
+              if (!blocker && (confirmed || isSample) && det.status !== 'running') sendDetective()
+            }}
             tells={tells}
             focus={focus}
             warmKey={warmKey}
@@ -399,7 +441,12 @@ export default function App() {
             footer={scanFooter}
           />
 
-          <Giveaways tells={tells} onPick={(t) => pointAt(t.start, t.end)} />
+          <Giveaways
+            tells={tells}
+            onPick={(t) => pointAt(t.start, t.end)}
+            blurOf={(t) => blurSpan(draft, t)?.replacement ?? null}
+            onBlur={quickBlur}
+          />
 
           {fix ? (
             <div ref={fixesRef}>
@@ -410,15 +457,7 @@ export default function App() {
                   setFix((f) => (f?.status === 'ready' ? { ...f, fixes: f.fixes.map((x, j) => (j === i ? { ...x, accepted: !x.accepted } : x)) } : f))
                 }
                 onApply={applyChosen}
-                onCopy={async () => {
-                  try {
-                    await navigator.clipboard.writeText(draft)
-                    setCopied(true)
-                    setTimeout(() => setCopied(false), 1800)
-                  } catch {
-                    /* clipboard blocked; the text is still in the editor */
-                  }
-                }}
+                onCopy={copyPost}
                 copied={copied}
                 onRetest={sendDetective}
                 onRetry={coolDown}
@@ -478,6 +517,7 @@ export default function App() {
             ) : null}
           </div>
           <Runs runs={runs} />
+          {runs.length ? <BeforeYouPost key={runs[0].id} score={current ? current.score : null} onCopy={copyPost} copied={copied} /> : null}
         </div>
       </div>
 
