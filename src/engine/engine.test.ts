@@ -46,6 +46,22 @@ describe('ruleTells', () => {
     expect(employer?.risk).toBe('high')
   })
 
+  it('catches dialect: regional phrases, spellings, currencies and time zones', () => {
+    const t = ruleTells('Kindly do the needful, my CTC is 18 lakhs. Meeting at 9 IST. My favourite colour is blue, salary ₹40,000.')
+    const dialect = t.filter((x) => x.kind === 'dialect').map((x) => x.text)
+    expect(dialect).toContain('Kindly do the needful')
+    expect(dialect).toContain('18 lakhs')
+    expect(dialect).toContain('IST')
+    expect(dialect).toContain('favourite')
+    expect(dialect).toContain('colour')
+    expect(dialect).toContain('₹40,000')
+  })
+
+  it('marks writing-style habits like text-speak and emoji', () => {
+    const t = ruleTells('ngl this place is wild 😅 lol')
+    expect(t.filter((x) => x.kind === 'style').map((x) => x.text)).toEqual(['ngl', '😅', 'lol'])
+  })
+
   it('ignores sentence starters that are not places', () => {
     const t = ruleTells('I work in The team every day. In Slack we talk.')
     expect(t.filter((x) => x.kind === 'location')).toHaveLength(0)

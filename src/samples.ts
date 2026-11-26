@@ -18,7 +18,7 @@ export const SAMPLES: Sample[] = [
     title: 'Burned-out engineer',
     where: 'r/cscareerquestions',
     draft:
-      "Throwaway because my manager reads this sub. Since the reorg in March, our on-call rotation for the UPI settlement service went from 8 people to 3. I'm the only woman engineer left on the team and I've been here 2 years, so I get every 3am page. Last Thursday I was paged four times and still had to demo at the Friday all-hands in the Bellandur office. Our skip-level just keeps saying 'we're a family'!!! Should I quit before my bonus vests?",
+      "Throwaway because my manager reads this sub. Since the reorg in March, our on-call rotation for the UPI settlement service went from 8 people to 3. I'm the only woman engineer left on the team and I've been here 2 years, so I get every 3am page. Last Thursday I was paged four times and still had to demo at the Friday all-hands in the Bellandur office. Our skip-level just keeps saying 'we're a family'!!! My CTC is 24 lakhs, so should I quit before my bonus vests?",
     vault: {
       employer: 'Lakeview Pay',
       industry: 'fintech payments',

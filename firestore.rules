@@ -20,13 +20,13 @@ service cloud.firestore {
       allow create, update: if request.auth != null
         && request.resource.data.keys().hasOnly([
           'employer', 'workplace_detail', 'location', 'team_or_role', 'time',
-          'event', 'demographic', 'relationship', 'style', 'other', 'runs', 'updatedAt'
+          'event', 'demographic', 'relationship', 'dialect', 'style', 'other', 'runs', 'updatedAt'
         ])
         && request.resource.data.updatedAt == request.time
         && request.resource.data.get('runs', 0) - prev('runs') == 1
         && bumped('employer') && bumped('workplace_detail') && bumped('location')
         && bumped('team_or_role') && bumped('time') && bumped('event')
-        && bumped('demographic') && bumped('relationship') && bumped('style')
+        && bumped('demographic') && bumped('relationship') && bumped('dialect') && bumped('style')
         && bumped('other');
     }
 

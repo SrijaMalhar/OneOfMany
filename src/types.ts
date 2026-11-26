@@ -9,6 +9,7 @@ export const TELL_KINDS = [
   'event',
   'demographic',
   'relationship',
+  'dialect',
   'style',
   'other',
 ] as const
@@ -23,6 +24,7 @@ export const TELL_KIND_LABEL: Record<TellKind, string> = {
   event: 'Event',
   demographic: 'About you',
   relationship: 'Family',
+  dialect: 'Dialect',
   style: 'Writing style',
   other: 'Contact detail',
 }

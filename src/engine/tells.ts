@@ -41,6 +41,20 @@ const RULES: Rule[] = [
   { kind: 'other', risk: 'high', why: 'Links can point straight back to you', re: /\bhttps?:\/\/\S+/gi },
   { kind: 'other', risk: 'high', why: 'Handles identify accounts', re: /(?:^|\s)@[A-Za-z0-9_]{3,}/g },
   { kind: 'style', risk: 'low', why: 'Repeated punctuation is a writing-style fingerprint', re: /[!?]{3,}|\.{4,}/g },
+
+  // Dialect: words that say where you learned your English. A name scrubber
+  // never catches these, and a detective uses them first.
+  { kind: 'dialect', risk: 'medium', why: 'Typical of Indian English, so it points to India', re: /\b(?:(?:kindly )?do the needful|kindly (?:revert|share|check|confirm)|prepone[ds]?|revert back|out of station|cousin (?:brother|sister)|passed out (?:of|from)|timepass|yaar)\b/gi },
+  { kind: 'dialect', risk: 'medium', why: 'Indian number words point to South Asia', re: /\b(?:\d+(?:\.\d+)?\s?)?(?:lakhs?|crores?)\b/gi },
+  { kind: 'dialect', risk: 'low', why: 'British-style spelling or slang narrows where you’re from', re: /\b(?:colour(?:ed|s)?|favourite|neighbour(?:s|hood)?|whilst|innit|fortnight|knackered|gutted|flatmates?)\b/gi },
+  { kind: 'dialect', risk: 'low', why: 'American spelling or terms point to the US', re: /\b(?:y'all|fall semester|freshman year|sophomore year|zip code|401\(?k\)?|color(?:ed|s)?|favorite|neighbor(?:s|hood)?)\b/gi },
+  { kind: 'dialect', risk: 'medium', why: 'Regional slang points to Australia or Canada', re: /\b(?:arvo|servo|bogan|maccas|toque|loonie|toonie|double-double)\b/gi },
+  { kind: 'dialect', risk: 'medium', why: 'A currency points to a country', re: /(?:₹|£|€|\bRs\.?\s?(?=\d)|\bINR\b|\b[ACS]\$|\brupees?\b)\s?(?:\d[\d,]*(?:\.\d+)?)?/gi },
+  { kind: 'dialect', risk: 'medium', why: 'A time zone points to a region', re: /\b(?:IST|PST|PDT|EST|EDT|CST|CDT|GMT|BST|CET|AEST|SGT)\b/g },
+
+  // Style: habits that link your accounts to each other.
+  { kind: 'style', risk: 'low', why: 'Signature abbreviations are a writing fingerprint', re: /\b(?:lol|lmao|tbh|imo|imho|ngl|smh|fwiw)\b/gi },
+  { kind: 'style', risk: 'low', why: 'Emoji habits can link your accounts', re: /\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*/gu },
 ]
 
 const RISK_RANK: Record<Risk, number> = { low: 0, medium: 1, high: 2 }
