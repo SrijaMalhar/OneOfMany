@@ -38,7 +38,11 @@ import { CloudIcon, LockIcon } from './ui/icons'
 import { Receipt } from './ui/Receipt'
 import { Report, Runs, type Run, type RunView } from './ui/Report'
 import { Seam } from './ui/Seam'
+import { Threads, type Link } from './ui/Threads'
 import { now } from './ui/time'
+import { coach } from './ui/coach'
+import type { CyclopsState } from './ui/Cyclops'
+import { Flock, SheepDefs } from './ui/Nobody'
 import { Vault } from './ui/Vault'
 import { Viewfinder } from './ui/Viewfinder'
 
@@ -176,6 +180,7 @@ export default function App() {
       setFixesSinceRun(0)
       setFix(null)
       setMeaning(null)
+      setScope('alone')
       setDet({ status: 'idle' })
       setCrossing(null)
       if (share) shareCounts(tells).then(refreshCounts).catch(() => {})
@@ -299,7 +304,40 @@ export default function App() {
     status: (vault[attribute] ?? '').trim() ? 'safe' : 'empty',
   }))
 
+  const [scope, setScope] = useState<'alone' | 'history'>('alone')
+  const [hoverFact, setHoverFact] = useState<Attribute | null>(null)
+  const splitRef = useRef<HTMLDivElement>(null)
+  const shownView = lastRun ? (scope === 'history' && lastRun.history ? lastRun.history : lastRun) : null
+  const threadLinks: Link[] = shownView
+    ? shownView.exposure.facts.filter((f) => f.status === 'recovered' || f.status === 'narrowed').map((f) => ({ attribute: f.attribute, status: f.status }))
+    : []
+
   const graderLabel = lastRun?.grades.some((g) => g.by === 'on_device') ? 'Gemini Nano' : 'rules'
+
+  const current = lastRun && lastRun.draft === draft ? lastRun.exposure : null
+  const nobody = coach({
+    draft,
+    words,
+    tells,
+    running: det.status === 'running',
+    online,
+    current,
+    first: runs[0]?.exposure.score ?? null,
+    runs: runs.length,
+    fixesPending: fixesSinceRun,
+  })
+  const cyclops: CyclopsState =
+    !isConfigured || !online
+      ? 'asleep'
+      : det.status === 'running'
+        ? 'scanning'
+        : current
+          ? current.score >= 50
+            ? 'found'
+            : current.score >= 25
+              ? 'unsure'
+              : 'lost'
+          : 'idle'
   const scanFooter =
     scan.status === 'running' ? (
       <span className="pulse">{deviceReady ? 'Gemini Nano is reading your draft' : 'Scanning'}</span>
@@ -324,9 +362,11 @@ export default function App() {
 
   return (
     <div className="app">
+      <SheepDefs />
       <Header online={online} device={device} cloudCalls={audit.inCloud} onHowItWorks={() => setHowOpen(true)} onReceipt={() => setReceiptOpen(true)} />
 
-      <div className="split">
+      <div className="split" ref={splitRef}>
+        <Threads container={splitRef} links={threadLinks} active={hoverFact} version={`${lastRun?.id ?? 0}|${scope}|${det.status}|${fix?.status ?? ''}|${draft}`} />
         <div className="side side-device">
           <p className="region">
             <LockIcon /> On your device
@@ -339,6 +379,7 @@ export default function App() {
             Before you post on Reddit, Glassdoor or a staff forum, send a detective after your draft. It reads only your words. Who
             you really are stays sealed in this browser, where Gemini Nano checks which of its guesses were right.
           </p>
+          <Flock mood={nobody.mood} glow={nobody.glow} says={nobody.says} singledOut={nobody.singledOut} />
           <div className="samples" role="group" aria-label="Sample stories">
             <span className="samples-label">Try a story</span>
             {SAMPLES.map((s) => (
@@ -354,6 +395,7 @@ export default function App() {
             tells={tells}
             focus={focus}
             warmKey={warmKey}
+            linked={hoverFact}
             footer={scanFooter}
           />
 
@@ -405,6 +447,7 @@ export default function App() {
             <CloudIcon /> In the cloud
           </p>
           <Detective
+            cyclops={cyclops}
             state={det}
             words={words}
             vaultFacts={vaultFacts}
@@ -422,6 +465,9 @@ export default function App() {
               <Report
                 key={lastRun.id}
                 run={lastRun}
+                scope={scope}
+                onScope={setScope}
+                onHoverFact={setHoverFact}
                 draft={draft}
                 graderLabel={graderLabel}
                 onEvidence={pointAtQuote}

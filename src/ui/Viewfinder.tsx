@@ -15,11 +15,13 @@ interface Props {
   warmKey: number
   footer: ReactNode
   readOnly?: boolean
+  /** A fact being pointed at in the detective's file. */
+  linked?: string | null
 }
 
 const HEATS: Heat[] = ['cool', 'warm', 'hot', 'hottest']
 
-export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, readOnly }: Props) {
+export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, readOnly, linked }: Props) {
   const mirrorRef = useRef<HTMLDivElement>(null)
   // The glows "warm up" once when a whole new draft arrives, not while typing.
   const [warmed, setWarmed] = useState(-1)
@@ -38,9 +40,10 @@ export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, rea
       out.push(
         <mark
           key={`${i}-${t.start}`}
-          className={`heat heat-${t.heat}${i === focusedIndex ? ' is-focus' : ''}`}
+          className={`heat heat-${t.heat}${i === focusedIndex ? ' is-focus' : ''}${linked && t.attrs.includes(linked as never) ? ' is-linked' : ''}`}
           style={{ ['--i' as string]: i }}
           data-index={i}
+          data-attrs={t.attrs.length ? t.attrs.join(' ') : undefined}
         >
           {draft.slice(t.start, t.end)}
         </mark>,
@@ -51,7 +54,7 @@ export function Viewfinder({ draft, onChange, tells, focus, warmKey, footer, rea
     // A trailing newline needs a character after it to take up space.
     out.push('​')
     return out
-  }, [draft, tells, focusedIndex])
+  }, [draft, tells, focusedIndex, linked])
 
   useEffect(() => {
     if (focusedIndex < 0) return

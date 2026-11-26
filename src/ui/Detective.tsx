@@ -3,7 +3,8 @@
 
 import { useEffect, useState } from 'react'
 import type { Fact } from '../engine/grade'
-import { FactTiles } from './Report'
+import { Cyclops, type CyclopsState } from './Cyclops'
+import { Dossier } from './Report'
 
 export type DetectiveState =
   | { status: 'idle' }
@@ -11,6 +12,7 @@ export type DetectiveState =
   | { status: 'error'; error: string }
 
 interface Props {
+  cyclops: CyclopsState
   state: DetectiveState
   words: number
   vaultFacts: number
@@ -31,16 +33,22 @@ const PHASE_TEXT = {
   grading: 'Checking the guesses on this device',
 }
 
-export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, sample, onConfirm, onSend, blocker, hasRuns, blankFacts }: Props) {
+export function Detective({ cyclops, state, words, vaultFacts, earlierPosts, confirmed, sample, onConfirm, onSend, blocker, hasRuns, blankFacts }: Props) {
   const running = state.status === 'running'
   return (
     <section className="detective" aria-labelledby="detective-title">
-      <h2 id="detective-title" className="cloud-h2">
-        The detective
-      </h2>
+      <div className="det-head">
+        <Cyclops state={cyclops} />
+        <div>
+          <h2 id="detective-title" className="cloud-h2">
+            The detective
+          </h2>
+          <p className="det-aka">We call it the Cyclops: one eye, and no idea who you are.</p>
+        </div>
+      </div>
       <p className="cloud-lede">
-        A Gemini model reads only your post, the way a stranger would, and tries to work out who wrote it. It never sees your
-        vault, so it has to earn every guess.
+        A Gemini model in the cloud reads only your post, the way a stranger would, and tries to work out who wrote it. It never
+        sees your vault, so it has to earn every guess.
       </p>
 
       <dl className="crossing">
@@ -90,7 +98,7 @@ export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, s
               ? 'Empty for now. Send the detective to see which of these it can work out from your words alone.'
               : 'Empty for now. Fill in your vault on the left, so your device can check which guesses are right.'}
           </p>
-          <FactTiles facts={blankFacts} blank />
+          <Dossier facts={blankFacts} blank />
         </div>
       ) : null}
     </section>

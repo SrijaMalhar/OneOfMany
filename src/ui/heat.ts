@@ -11,6 +11,12 @@ export interface HeatTell extends Tell {
   heat: Heat
   /** The detective quoted this span as evidence. */
   cited: boolean
+  /** Facts the detective worked out from this span. */
+  attrs: Attribute[]
+}
+
+export interface CitedTell extends Tell {
+  attribute: Attribute
 }
 
 export const HEAT_LABEL: Record<Heat, string> = {
@@ -34,8 +40,8 @@ const KIND_FOR: Record<Attribute, TellKind> = {
 }
 
 /** Detective evidence as spans in the draft, so it can glow and be rewritten. */
-export function evidenceTells(draft: string, guesses: DetectiveGuess[], minConfidence: number): Tell[] {
-  const out: Tell[] = []
+export function evidenceTells(draft: string, guesses: DetectiveGuess[], minConfidence: number): CitedTell[] {
+  const out: CitedTell[] = []
   for (const g of guesses) {
     if (g.confidence < minConfidence / 2) continue
     for (const e of g.evidence) {
@@ -50,16 +56,17 @@ export function evidenceTells(draft: string, guesses: DetectiveGuess[], minConfi
         why: `The detective used this to work out your ${ATTRIBUTE_LABEL[g.attribute].toLowerCase()}`,
         risk: 'high',
         origins: ['in_cloud'],
+        attribute: g.attribute,
       })
     }
   }
   return out
 }
 
-export function withHeat(tells: Tell[], cited: Tell[]): HeatTell[] {
+export function withHeat(tells: Tell[], cited: CitedTell[]): HeatTell[] {
   return tells.map((t) => {
-    const isCited = cited.some((c) => c.start < t.end && c.end > t.start)
-    const heat: Heat = isCited ? 'hottest' : t.risk === 'high' ? 'hot' : t.risk === 'medium' ? 'warm' : 'cool'
-    return { ...t, heat, cited: isCited }
+    const hits = cited.filter((c) => c.start < t.end && c.end > t.start)
+    const heat: Heat = hits.length ? 'hottest' : t.risk === 'high' ? 'hot' : t.risk === 'medium' ? 'warm' : 'cool'
+    return { ...t, heat, cited: hits.length > 0, attrs: Array.from(new Set(hits.map((c) => c.attribute))) }
   })
 }
