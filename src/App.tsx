@@ -1,0 +1,462 @@
+// OneOfMany: the left half of the screen is your device, the right half is
+// the cloud. Your draft crosses the line between them; your vault never does.
+
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { audit as auditRecords } from './ai/receipt'
+import { prepareDeviceModel } from './ai/models'
+import { checkMeaning, findTells, gradePrivately, runDetective, suggestFixes, testFirewall, type FirewallTestResult } from './ai/tasks'
+import { applyFixes, cluesToRewrite } from './engine/fixes'
+import { exposure, type Fact } from './engine/grade'
+import { contentWords } from './engine/meaning'
+import { combineTells, locate, modelTells, ruleTells, type ModelTell } from './engine/tells'
+import { DEFAULT_SETTINGS, isConfigured, loadSettings } from './firebase'
+import { SAMPLES } from './samples'
+import {
+  forgetEverything,
+  loadDraft,
+  loadShareChoice,
+  loadVault,
+  readCounts,
+  saveDraft,
+  saveShareChoice,
+  saveVault,
+  shareCounts,
+  type Counts,
+} from './store'
+import { ATTRIBUTES, type Attribute, type Grade, type Profile, type Source, type Verdict } from './types'
+import { Detective, type DetectiveState } from './ui/Detective'
+import { EarlierPosts } from './ui/EarlierPosts'
+import { friendly } from './ui/errors'
+import { Fixes, type FixState, type MeaningState } from './ui/Fixes'
+import { Footer } from './ui/Footer'
+import { Giveaways } from './ui/Giveaways'
+import { Header } from './ui/Header'
+import { evidenceTells, withHeat } from './ui/heat'
+import { useDeviceStatus, useOnline, useReceipt } from './ui/hooks'
+import { HowItWorks } from './ui/HowItWorks'
+import { CloudIcon, LockIcon } from './ui/icons'
+import { Receipt } from './ui/Receipt'
+import { Report, Runs, type Run, type RunView } from './ui/Report'
+import { Seam } from './ui/Seam'
+import { now } from './ui/time'
+import { Vault } from './ui/Vault'
+import { Viewfinder } from './ui/Viewfinder'
+
+const MIN_WORDS = 15
+
+function wordCount(s: string) {
+  return (s.match(/\S+/g) ?? []).length
+}
+
+export default function App() {
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS)
+  useEffect(() => {
+    loadSettings().then(setSettings)
+  }, [])
+
+  const [device, recheckDevice] = useDeviceStatus()
+  const deviceReady = device === 'available'
+  const online = useOnline()
+  const records = useReceipt()
+
+  // ------------------------------------------------------------ vault + draft
+  const [vault, setVaultState] = useState<Profile>(loadVault)
+  const setVault = (p: Profile) => {
+    setVaultState(p)
+    saveVault(p)
+  }
+  const [draft, setDraftState] = useState<string>(loadDraft)
+  const setDraft = (d: string) => {
+    setDraftState(d)
+    saveDraft(d)
+  }
+  const [earlier, setEarlier] = useState<string[]>([])
+  const earlierPosts = earlier.map((p) => p.trim()).filter(Boolean)
+  const [warmKey, setWarmKey] = useState(0)
+  const [sampleId, setSampleId] = useState<string | null>(null)
+
+  // A sample stays a sample while it is still recognisably the sample.
+  const sample = SAMPLES.find((s) => s.id === sampleId) ?? null
+  const isSample = useMemo(() => {
+    if (!sample) return false
+    const base = new Set(contentWords(sample.draft))
+    const now = contentWords(draft)
+    if (!now.length) return false
+    return now.filter((w) => base.has(w)).length / now.length >= 0.6
+  }, [sample, draft])
+
+  // ------------------------------------------------------------ giveaways
+  const [aiScan, setAiScan] = useState<{ items: ModelTell[]; source: Source; forDraft: string } | null>(null)
+  const [scan, setScan] = useState<{ status: 'idle' | 'running' | 'error'; error?: string }>({ status: 'idle' })
+
+  const [runs, setRuns] = useState<Run[]>([])
+  const lastRun = runs.at(-1) ?? null
+
+  const rules = useMemo(() => ruleTells(draft), [draft])
+  const fromModel = useMemo(() => (aiScan ? modelTells(draft, aiScan.items, aiScan.source) : []), [draft, aiScan])
+  const cited = useMemo(
+    () => (lastRun ? evidenceTells(draft, lastRun.report.guesses, settings.minConfidence) : []),
+    [draft, lastRun, settings.minConfidence],
+  )
+  const tells = useMemo(() => withHeat(combineTells(draft, rules, fromModel, cited), cited), [draft, rules, fromModel, cited])
+
+  const scanNow = async () => {
+    if (!isConfigured || draft.trim().length < 20) return
+    const forDraft = draft
+    setScan({ status: 'running' })
+    try {
+      const r = await findTells(forDraft, vault, settings)
+      const items: ModelTell[] = r.tells.map((t) => ({ quote: t.text, kind: t.kind, why: t.why, risk: t.risk }))
+      setAiScan({ items, source: r.source, forDraft })
+      setScan({ status: 'idle' })
+    } catch (e) {
+      setScan({ status: 'error', error: friendly(e) })
+    }
+  }
+
+  // With Gemini Nano ready, scan automatically once typing pauses. It's free
+  // and offline, so there's no reason to wait for a click.
+  useEffect(() => {
+    if (!deviceReady || !isConfigured || draft.trim().length < 40 || aiScan?.forDraft === draft) return
+    const t = setTimeout(scanNow, 1400)
+    return () => clearTimeout(t)
+    // scanNow reads the latest draft; re-running on draft changes is enough.
+  }, [deviceReady, draft, aiScan?.forDraft]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ------------------------------------------------------------ focus
+  const [focus, setFocus] = useState<{ start: number; end: number; nonce: number } | null>(null)
+  const pointAt = (start: number, end: number) => setFocus((f) => ({ start, end, nonce: (f?.nonce ?? 0) + 1 }))
+  const pointAtQuote = (q: string) => {
+    const at = locate(draft, q)
+    if (at >= 0) pointAt(at, at + q.trim().length)
+  }
+
+  // ------------------------------------------------------------ detective
+  const [det, setDet] = useState<DetectiveState>({ status: 'idle' })
+  const [confirmed, setConfirmed] = useState(false)
+  const [crossing, setCrossing] = useState<'out' | 'back' | null>(null)
+  const [fixesSinceRun, setFixesSinceRun] = useState(0)
+  const reportRef = useRef<HTMLDivElement>(null)
+
+  const words = wordCount(draft)
+  const vaultFacts = ATTRIBUTES.filter((a) => (vault[a] ?? '').trim()).length
+  const blocker = !isConfigured
+    ? 'Firebase isn’t connected in this copy, so the detective can’t run. The README explains the setup.'
+    : !online
+      ? 'You’re offline. The detective needs the cloud; the giveaway scan keeps working on this device.'
+      : words < MIN_WORDS
+        ? `Write a little more first. The detective needs at least ${MIN_WORDS} words.`
+        : null
+
+  const sendDetective = async () => {
+    if (blocker) return
+    const startedAt = now()
+    const forDraft = draft
+    setDet({ status: 'running', startedAt, phase: 'detective' })
+    setCrossing('out')
+    try {
+      const report = await runDetective(forDraft, vault, settings)
+      setCrossing('back')
+      let historyReport = null
+      if (earlierPosts.length) {
+        setDet({ status: 'running', startedAt, phase: 'history' })
+        setCrossing('out')
+        historyReport = await runDetective(forDraft, vault, settings, earlierPosts)
+        setCrossing('back')
+      }
+      setDet({ status: 'running', startedAt, phase: 'grading' })
+      const grade = async (r: typeof report): Promise<RunView> => {
+        const grades = await gradePrivately(r.guesses, vault, settings, deviceReady)
+        return { report: r, grades, exposure: exposure(grades, r.guesses, settings.minConfidence, vault) }
+      }
+      const alone = await grade(report)
+      const history = historyReport ? { ...(await grade(historyReport)), posts: earlierPosts.length } : undefined
+      const at = now()
+      setRuns((rs) => [...rs, { ...alone, id: at, at, draft: forDraft, fixesBefore: fixesSinceRun, history }])
+      setFixesSinceRun(0)
+      setFix(null)
+      setMeaning(null)
+      setDet({ status: 'idle' })
+      setCrossing(null)
+      if (share) shareCounts(tells).then(refreshCounts).catch(() => {})
+      requestAnimationFrame(() => reportRef.current?.scrollIntoView({ block: 'start', behavior: smooth() }))
+    } catch (e) {
+      setCrossing(null)
+      setDet({ status: 'error', error: friendly(e) })
+    }
+  }
+
+  const override = (attribute: Attribute, verdict: Verdict, scope: 'alone' | 'history') => {
+    setRuns((rs) =>
+      rs.map((r, i) => {
+        if (i !== rs.length - 1) return r
+        const target: RunView = scope === 'history' && r.history ? r.history : r
+        const grades: Grade[] = target.grades.some((g) => g.attribute === attribute)
+          ? target.grades.map((g) => (g.attribute === attribute ? { ...g, verdict, by: 'you' as const } : g))
+          : [...target.grades, { attribute, verdict, by: 'you' as const }]
+        const updated = { ...target, grades, exposure: exposure(grades, target.report.guesses, settings.minConfidence, vault) }
+        return scope === 'history' && r.history ? { ...r, history: { ...r.history, ...updated } } : { ...r, ...updated }
+      }),
+    )
+  }
+
+  // ------------------------------------------------------------ fixes
+  const [fix, setFix] = useState<FixState | null>(null)
+  const [meaning, setMeaning] = useState<MeaningState>(null)
+  const [copied, setCopied] = useState(false)
+  const fixesRef = useRef<HTMLDivElement>(null)
+
+  const coolDown = async () => {
+    if (!lastRun) return
+    setFix({ status: 'loading' })
+    setMeaning(null)
+    requestAnimationFrame(() => fixesRef.current?.scrollIntoView({ block: 'center', behavior: smooth() }))
+    const clues = cluesToRewrite(draft, tells, lastRun.report.guesses, settings.minConfidence)
+    try {
+      const r = await suggestFixes(draft, clues, vault, settings)
+      setFix({ status: 'ready', fixes: r.fixes, source: r.source })
+    } catch (e) {
+      setFix({ status: 'error', error: friendly(e) })
+    }
+  }
+
+  const applyChosen = async () => {
+    if (fix?.status !== 'ready') return
+    const chosen = fix.fixes.filter((f) => f.accepted)
+    const original = draft
+    const next = applyFixes(draft, fix.fixes)
+    setDraft(next)
+    setFix({ status: 'applied', count: chosen.length, source: fix.source })
+    setFixesSinceRun((n) => n + chosen.length)
+    if (!settings.meaningCheck) return
+    setMeaning({ status: 'loading' })
+    const result = await checkMeaning(original, next, chosen.map((f) => f.original), settings, deviceReady)
+    setMeaning({ status: 'ready', result })
+  }
+
+  // ------------------------------------------------------------ device model
+  const [progress, setProgress] = useState<number | null>(null)
+  const download = async () => {
+    try {
+      setProgress(0)
+      await prepareDeviceModel(settings.fastModel, setProgress)
+    } catch {
+      // Chrome reports the reason through availability(); the status chip shows it.
+    } finally {
+      setProgress(null)
+      recheckDevice()
+    }
+  }
+
+  // ------------------------------------------------------------ receipt, sharing
+  const [receiptOpen, setReceiptOpen] = useState(false)
+  const [howOpen, setHowOpen] = useState(false)
+  const [fwTest, setFwTest] = useState<FirewallTestResult | null>(null)
+  const publicText = [draft, ...earlierPosts, ...runs.map((r) => r.draft)].join('\n')
+  const audit = useMemo(() => auditRecords(records, vault, publicText), [records, vault, publicText])
+
+  const [share, setShare] = useState(loadShareChoice)
+  const [counts, setCounts] = useState<Counts | null>(null)
+  const refreshCounts = () => readCounts().then(setCounts)
+  useEffect(() => {
+    readCounts().then(setCounts)
+  }, [])
+
+  // ------------------------------------------------------------ actions
+  const loadSample = (id: string) => {
+    const s = SAMPLES.find((x) => x.id === id)
+    if (!s) return
+    setSampleId(id)
+    setDraft(s.draft)
+    setVault(s.vault)
+    setEarlier([])
+    setRuns([])
+    setFix(null)
+    setMeaning(null)
+    setAiScan(null)
+    setDet({ status: 'idle' })
+    setFixesSinceRun(0)
+    setWarmKey((k) => k + 1)
+  }
+
+  const forget = () => {
+    forgetEverything()
+    setVaultState({})
+    setDraftState('')
+    setEarlier([])
+    setRuns([])
+    setFix(null)
+    setMeaning(null)
+    setAiScan(null)
+    setSampleId(null)
+    setConfirmed(false)
+    setShare(false)
+    setFwTest(null)
+  }
+
+  const blankFacts: Fact[] = ATTRIBUTES.map((attribute) => ({
+    attribute,
+    status: (vault[attribute] ?? '').trim() ? 'safe' : 'empty',
+  }))
+
+  const graderLabel = lastRun?.grades.some((g) => g.by === 'on_device') ? 'Gemini Nano' : 'rules'
+  const scanFooter =
+    scan.status === 'running' ? (
+      <span className="pulse">{deviceReady ? 'Gemini Nano is reading your draft' : 'Scanning'}</span>
+    ) : (
+      <>
+        <span>
+          {tells.length} {tells.length === 1 ? 'giveaway' : 'giveaways'}
+          {aiScan && aiScan.forDraft === draft
+            ? aiScan.source === 'on_device'
+              ? ', scanned by Gemini Nano on this device'
+              : ', deep-scanned in the cloud'
+            : ', found by rules on this device'}
+        </span>
+        {!deviceReady && isConfigured && online && draft.trim().length >= 20 && aiScan?.forDraft !== draft ? (
+          <button type="button" className="ghost-btn" onClick={scanNow}>
+            Deep scan in the cloud
+          </button>
+        ) : null}
+        {scan.status === 'error' ? <span className="vf-error">{scan.error}</span> : null}
+      </>
+    )
+
+  return (
+    <div className="app">
+      <Header online={online} device={device} cloudCalls={audit.inCloud} onHowItWorks={() => setHowOpen(true)} onReceipt={() => setReceiptOpen(true)} />
+
+      <div className="split">
+        <div className="side side-device">
+          <p className="region">
+            <LockIcon /> On your device
+          </p>
+          <h1 className="hero">
+            <span className="hero-1">Your account is anonymous.</span>
+            <span className="hero-2">Is your post?</span>
+          </h1>
+          <p className="lede">
+            Before you post on Reddit, Glassdoor or a staff forum, send a detective after your draft. It reads only your words. Who
+            you really are stays sealed in this browser, where Gemini Nano checks which of its guesses were right.
+          </p>
+          <div className="samples" role="group" aria-label="Sample stories">
+            <span className="samples-label">Try a story</span>
+            {SAMPLES.map((s) => (
+              <button key={s.id} type="button" className="sample" aria-pressed={sampleId === s.id && isSample} onClick={() => loadSample(s.id)}>
+                {s.title}
+              </button>
+            ))}
+          </div>
+
+          <Viewfinder
+            draft={draft}
+            onChange={setDraft}
+            tells={tells}
+            focus={focus}
+            warmKey={warmKey}
+            footer={scanFooter}
+          />
+
+          <Giveaways tells={tells} onPick={(t) => pointAt(t.start, t.end)} />
+
+          {fix ? (
+            <div ref={fixesRef}>
+              <Fixes
+                state={fix}
+                meaning={meaning}
+                onToggle={(i) =>
+                  setFix((f) => (f?.status === 'ready' ? { ...f, fixes: f.fixes.map((x, j) => (j === i ? { ...x, accepted: !x.accepted } : x)) } : f))
+                }
+                onApply={applyChosen}
+                onCopy={async () => {
+                  try {
+                    await navigator.clipboard.writeText(draft)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 1800)
+                  } catch {
+                    /* clipboard blocked; the text is still in the editor */
+                  }
+                }}
+                copied={copied}
+                onRetest={sendDetective}
+                onRetry={coolDown}
+                onClose={() => setFix(null)}
+              />
+            </div>
+          ) : null}
+
+          <EarlierPosts posts={earlier} onChange={setEarlier} />
+
+          <Vault
+            vault={vault}
+            onChange={setVault}
+            device={device}
+            progress={progress}
+            canDownload={isConfigured}
+            onDownload={download}
+            onForget={forget}
+          />
+        </div>
+
+        <Seam vaultValuesSent={audit.vaultValuesSent} blocked={audit.blocked} crossing={crossing} onOpenReceipt={() => setReceiptOpen(true)} />
+
+        <div className="side side-cloud">
+          <p className="region">
+            <CloudIcon /> In the cloud
+          </p>
+          <Detective
+            state={det}
+            words={words}
+            vaultFacts={vaultFacts}
+            earlierPosts={earlierPosts.length}
+            confirmed={confirmed || isSample}
+            sample={isSample}
+            onConfirm={setConfirmed}
+            onSend={sendDetective}
+            blocker={blocker}
+            hasRuns={runs.length > 0}
+            blankFacts={blankFacts}
+          />
+          <div ref={reportRef} className="report-anchor">
+            {lastRun ? (
+              <Report
+                key={lastRun.id}
+                run={lastRun}
+                graderLabel={graderLabel}
+                onEvidence={pointAtQuote}
+                onOverride={override}
+                onCoolDown={coolDown}
+                coolingDisabled={fix?.status === 'loading'}
+              />
+            ) : null}
+          </div>
+          <Runs runs={runs} />
+        </div>
+      </div>
+
+      <Footer
+        share={share}
+        onShare={(v) => {
+          setShare(v)
+          saveShareChoice(v)
+        }}
+        counts={counts}
+        configured={isConfigured}
+      />
+
+      <Receipt
+        open={receiptOpen}
+        onClose={() => setReceiptOpen(false)}
+        records={records}
+        audit={audit}
+        firewallTest={fwTest}
+        onFirewallTest={async () => setFwTest(await testFirewall(vault, publicText))}
+      />
+      <HowItWorks open={howOpen} onClose={() => setHowOpen(false)} />
+    </div>
+  )
+}
+
+function smooth(): ScrollBehavior {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+}
