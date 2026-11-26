@@ -110,7 +110,7 @@ We'd rather name these than have a reviewer find them:
 | **Remote Config** | [`src/firebase.ts`](src/firebase.ts), [`remoteconfig.template.json`](remoteconfig.template.json) | Detective model, fallback model, search on or off, confidence threshold and the meaning check can be changed live |
 | **Authentication** | [`src/firebase.ts`](src/firebase.ts) | Anonymous sign-in for the opt-in counter |
 | **Cloud Firestore** | [`src/store.ts`](src/store.ts), [`firestore.rules`](firestore.rules) | Opt-in community counts of giveaway types, with rules that only allow small increments |
-| **Hosting** | [`firebase.json`](firebase.json) | Serves the app with strict headers |
+| **Hosting** | [`firebase.json`](firebase.json) | Optional: the app also deploys to Firebase Hosting with the same strict headers it uses on Vercel |
 
 Where Firebase AI Logic is called at runtime:
 
@@ -151,6 +151,14 @@ Requirements: Node 20 or newer, desktop Chrome.
    On first run, the browser console prints an App Check debug token. Add it under App Check > Apps > Manage debug tokens, and set it as `VITE_APPCHECK_DEBUG_TOKEN` in `.env.local`. It's only ever used by the dev server.
 
 ### Deploy
+
+**Vercel** (what the live app uses). Import the GitHub repo in Vercel; `vercel.json` sets the build. Add the `VITE_FIREBASE_*` values and `VITE_RECAPTCHA_ENTERPRISE_SITE_KEY` as environment variables (never the debug token), then add the Vercel domain to the reCAPTCHA Enterprise key's allowed domains in Google Cloud. Firestore rules and the Remote Config template still deploy with the Firebase CLI:
+
+```bash
+firebase deploy --only firestore:rules,remoteconfig
+```
+
+**Firebase Hosting** works too:
 
 ```bash
 npm install -g firebase-tools

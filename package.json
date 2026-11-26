@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Test whether an anonymous post can be traced back to you. A cloud detective attacks the draft; your real identity stays on your device.",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
