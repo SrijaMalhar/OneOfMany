@@ -1,7 +1,5 @@
-import '@fontsource-variable/atkinson-hyperlegible-next/wght.css'
-import '@fontsource/redaction/latin-400.css'
-import '@fontsource/redaction/latin-700.css'
-import '@fontsource/redaction-50/latin-400.css'
+import '@fontsource-variable/geist/wght.css'
+import '@fontsource-variable/geist-mono/wght.css'
 import './styles.css'
 
 import { StrictMode } from 'react'

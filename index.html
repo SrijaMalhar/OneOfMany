@@ -4,12 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1d1a42" />
+    <meta name="theme-color" content="#f8f8f9" />
+    <meta name="color-scheme" content="light dark" />
     <meta
       name="description"
       content="Before you post anonymously, OneOfMany sends an AI detective after your draft. Your real identity stays on your device and grades the attack privately."
     />
-    <title>OneOfMany · Is your anonymous post really anonymous?</title>
+    <title>OneOfMany: is your anonymous post really anonymous?</title>
+    <script>
+      // Set the theme before the first paint, so there's no flash.
+      try {
+        var t = localStorage.getItem('oneofmany.theme.v1')
+        if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.dataset.theme = t
+        if (t === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f0f11')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

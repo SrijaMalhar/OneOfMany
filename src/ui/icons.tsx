@@ -104,3 +104,47 @@ export const ReceiptIcon = (p: P) => (
     <path d="M6 5h4M6 7.75h4M6 10.5h2" />
   </Svg>
 )
+
+export const ArrowUpRightIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M5 11 11 5M6 5h5v5" />
+  </Svg>
+)
+
+export const InfoIcon = (p: P) => (
+  <Svg {...p}>
+    <circle cx="8" cy="8" r="6" />
+    <path d="M8 7.25v3.5M8 5.25v.01" />
+  </Svg>
+)
+
+export const SunIcon = (p: P) => (
+  <Svg {...p}>
+    <circle cx="8" cy="8" r="2.75" />
+    <path d="M8 1.75v1.5M8 12.75v1.5M1.75 8h1.5M12.75 8h1.5M3.6 3.6l1.05 1.05M11.35 11.35l1.05 1.05M3.6 12.4l1.05-1.05M11.35 4.65l1.05-1.05" />
+  </Svg>
+)
+
+export const MoonIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M13.25 9.5A5.5 5.5 0 0 1 6.5 2.75a5.5 5.5 0 1 0 6.75 6.75Z" />
+  </Svg>
+)
+
+export const ChevronDownIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M4 6l4 4 4-4" />
+  </Svg>
+)
+
+export const CodeIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5" />
+  </Svg>
+)
+
+export const CheckIcon = (p: P) => (
+  <Svg {...p}>
+    <path d="M3 8.5 6.5 12 13 4.5" />
+  </Svg>
+)
