@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import type { GenerativeModel } from 'firebase/ai'
+import { fixPrompt } from './prompts'
 import { audit, type CallRecord } from './receipt'
+import { BlockedByFirewall, run } from './run'
 import { cleanGuesses, testFirewall } from './tasks'
 
 describe('testFirewall', () => {
@@ -28,6 +31,40 @@ describe('cleanGuesses', () => {
     // Employer sorts first, and an "unknown" guess carries no confidence.
     expect(out[0]).toMatchObject({ attribute: 'employer', confidence: 0 })
     expect(out[1]).toMatchObject({ attribute: 'city', confidence: 100, evidence: ['Bellandur lake'] })
+  })
+})
+
+describe('firewall scope', () => {
+  // A stub that answers like a model but never touches the network.
+  const stub = { generateContent: async () => ({ response: { text: () => '{}', inferenceSource: 'in_cloud' } }) } as unknown as GenerativeModel
+  const draft = 'I joined recently and get every page.'
+  const clues = ['every page']
+
+  it('ignores vault values that only appear in the fixed instructions', async () => {
+    // The rewrite prompt's own example mentions "woman"; the draft doesn't.
+    expect(fixPrompt(draft, clues)).toMatch(/woman/)
+    const r = await run({
+      task: 'Rewrite giveaways',
+      model: stub,
+      modelName: 'stub',
+      routing: 'device_first',
+      prompt: fixPrompt(draft, clues),
+      guard: { profile: { gender: 'woman' }, draft, content: [draft, ...clues].join('\n') },
+    })
+    expect(r.text).toBe('{}')
+  })
+
+  it('still blocks a vault value in the user-supplied text', async () => {
+    await expect(
+      run({
+        task: 'Rewrite giveaways',
+        model: stub,
+        modelName: 'stub',
+        routing: 'device_first',
+        prompt: fixPrompt(draft, ['Lakeview Pay']),
+        guard: { profile: { employer: 'Lakeview Pay' }, draft, content: [draft, 'Lakeview Pay'].join('\n') },
+      }),
+    ).rejects.toBeInstanceOf(BlockedByFirewall)
   })
 })
 

@@ -13,6 +13,8 @@ export interface CallRecord {
   model: string
   source?: 'on_device' | 'in_cloud'
   payload: string
+  /** The user-supplied part of the payload, which the audit re-checks. */
+  checked?: string
   firewall: 'passed' | 'blocked' | 'not_needed'
   ms?: number
   status: 'running' | 'ok' | 'error' | 'blocked'
@@ -75,7 +77,7 @@ export function audit(records: CallRecord[], profile: Profile, publicText: strin
   let vaultValuesSent = 0
   for (const r of records) {
     if (r.source !== 'in_cloud') continue
-    for (const v of secrets) if (containsPhrase(r.payload, v)) vaultValuesSent++
+    for (const v of secrets) if (containsPhrase(r.checked ?? r.payload, v)) vaultValuesSent++
   }
   return {
     onDevice: records.filter((r) => r.source === 'on_device').length,

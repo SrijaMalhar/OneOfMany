@@ -21,8 +21,13 @@ export interface RunOptions {
   modelName: string
   routing: Routing
   prompt: string
-  /** Required for any routing that can reach the cloud. */
-  guard?: { profile: Profile; draft: string }
+  /**
+   * Required for any routing that can reach the cloud. `content` is the part
+   * of the prompt that came from the user (draft, clues, earlier posts); the
+   * fixed instructions are code, so a vault value that happens to appear in
+   * them (an example like "woman") is not a leak.
+   */
+  guard?: { profile: Profile; draft: string; content?: string }
   /** Give up after this long instead of the SDK's 3-minute default. */
   timeoutMs?: number
 }
@@ -36,7 +41,7 @@ export async function run(o: RunOptions): Promise<RunResult> {
   let firewall: 'passed' | 'blocked' | 'not_needed' = 'not_needed'
   if (mayReachCloud) {
     if (!o.guard) throw new Error(`${o.task}: cloud-capable call without a firewall guard`)
-    const check = inspect(o.prompt, o.guard.profile, o.guard.draft)
+    const check = inspect(o.guard.content ?? o.prompt, o.guard.profile, o.guard.draft)
     firewall = check.ok ? 'passed' : 'blocked'
     if (!check.ok) {
       startRecordBlocked(o, check.blockedField ?? 'field')
@@ -50,7 +55,7 @@ export async function run(o: RunOptions): Promise<RunResult> {
     throw new Error(`${o.task} needs the on-device model, which isn't ready on this device. Nothing was sent.`)
   }
 
-  const id = startRecord({ task: o.task, routing: o.routing, model: o.modelName, payload: o.prompt, firewall })
+  const id = startRecord({ task: o.task, routing: o.routing, model: o.modelName, payload: o.prompt, checked: o.guard?.content, firewall })
   const t0 = performance.now()
   const timeoutMs = o.timeoutMs ?? (o.routing === 'cloud_only' ? 75_000 : 45_000)
   const controller = new AbortController()

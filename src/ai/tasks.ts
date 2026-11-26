@@ -26,7 +26,7 @@ import { DETECTIVE_SCHEMA, FIX_SCHEMA, GRADE_SCHEMA, MEANING_SCHEMA, TELLS_SCHEM
 
 export async function findTells(draft: string, profile: Profile, s: Settings): Promise<{ tells: Tell[]; source: 'on_device' | 'in_cloud' }> {
   const model = modelFor({ job: 'lint', routing: 'device_first', cloudModel: s.fastModel, schema: TELLS_SCHEMA, temperature: 0.2 })
-  const r = await run({ task: 'Find giveaways', model, modelName: s.fastModel, routing: 'device_first', prompt: lintPrompt(draft), guard: { profile, draft } })
+  const r = await run({ task: 'Find giveaways', model, modelName: s.fastModel, routing: 'device_first', prompt: lintPrompt(draft), guard: { profile, draft, content: draft } })
   const parsed = parseJson<{ tells: ModelTell[] }>(r.text)
   return { tells: modelTells(draft, parsed?.tells ?? [], r.source), source: r.source }
 }
@@ -141,7 +141,7 @@ async function attemptDetective(draft: string, profile: Profile, s: Settings, a:
     modelName: a.model,
     routing: 'cloud_only',
     prompt: detectivePrompt(draft, a.search, earlierPosts),
-    guard: { profile, draft: publicText },
+    guard: { profile, draft: publicText, content: publicText },
     timeoutMs: a.timeoutMs,
   })
   const text = r.text
@@ -158,7 +158,7 @@ async function attemptDetective(draft: string, profile: Profile, s: Settings, a:
       modelName: s.fastModel,
       routing: 'cloud_only',
       prompt: structurePrompt(text),
-      guard: { profile, draft: `${publicText}\n${text}` },
+      guard: { profile, draft: `${publicText}\n${text}`, content: text },
       timeoutMs: 30_000,
     })
     raw = parseJson<RawReport>(sr.text)
@@ -240,7 +240,7 @@ export async function gradePrivately(
 export async function suggestFixes(draft: string, clues: string[], profile: Profile, s: Settings): Promise<{ fixes: Fix[]; source: 'on_device' | 'in_cloud' }> {
   if (!clues.length) return { fixes: [], source: 'on_device' }
   const model = modelFor({ job: 'rewrite', routing: 'device_first', cloudModel: s.fastModel, schema: FIX_SCHEMA, temperature: 0.3 })
-  const r = await run({ task: 'Rewrite giveaways', model, modelName: s.fastModel, routing: 'device_first', prompt: fixPrompt(draft, clues), guard: { profile, draft } })
+  const r = await run({ task: 'Rewrite giveaways', model, modelName: s.fastModel, routing: 'device_first', prompt: fixPrompt(draft, clues), guard: { profile, draft, content: [draft, ...clues].join('\n') } })
   const parsed = parseJson<{ fixes: { original: string; replacement: string; reason: string }[] }>(r.text)
   const seen = new Set<string>()
   const fixes: Fix[] = []
@@ -316,7 +316,7 @@ export async function testFirewall(profile: Profile, draft: string): Promise<Fir
       modelName: 'test stub',
       routing: 'device_first',
       prompt: `Firewall test. This request deliberately contains your private ${field}: ${value}`,
-      guard: { profile, draft },
+      guard: { profile, draft, content: `${field}: ${value}` },
     })
     return { outcome: 'not_blocked', field }
   } catch (e) {
