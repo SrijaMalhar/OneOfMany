@@ -9,7 +9,15 @@ const HEAT_RANK = { hottest: 3, hot: 2, warm: 1, cool: 0 } as const
 
 const ORIGIN_TEXT = { rule: 'rules', on_device: 'Gemini Nano', in_cloud: 'detective' } as const
 
-export function Giveaways({ tells, onPick }: { tells: HeatTell[]; onPick: (t: HeatTell) => void }) {
+interface Props {
+  tells: HeatTell[]
+  onPick: (t: HeatTell) => void
+  /** The instant, on-device rewrite for a giveaway, if there is a safe one. */
+  blurOf: (t: HeatTell) => string | null
+  onBlur: (t: HeatTell) => void
+}
+
+export function Giveaways({ tells, onPick, blurOf, onBlur }: Props) {
   const [all, setAll] = useState(false)
   if (!tells.length) return null
   const sorted = [...tells].sort((a, b) => HEAT_RANK[b.heat] - HEAT_RANK[a.heat] || a.start - b.start)
@@ -19,7 +27,7 @@ export function Giveaways({ tells, onPick }: { tells: HeatTell[]; onPick: (t: He
       <h3 className="dev-h3">What gives you away</h3>
       <ul className="gv-list">
         {shown.map((t) => (
-          <li key={`${t.start}-${t.end}`}>
+          <li key={`${t.start}-${t.end}`} className={`gv heat-${t.heat}`}>
             <button type="button" className={`gv-item heat-${t.heat}`} onClick={() => onPick(t)}>
               <span className="gv-dot" aria-hidden="true" />
               <span className="gv-body">
@@ -30,6 +38,7 @@ export function Giveaways({ tells, onPick }: { tells: HeatTell[]; onPick: (t: He
                 </span>
               </span>
             </button>
+            <Blur tell={t} to={blurOf(t)} onBlur={onBlur} />
           </li>
         ))}
       </ul>
@@ -39,5 +48,14 @@ export function Giveaways({ tells, onPick }: { tells: HeatTell[]; onPick: (t: He
         </button>
       ) : null}
     </section>
+  )
+}
+
+function Blur({ tell, to, onBlur }: { tell: HeatTell; to: string | null; onBlur: (t: HeatTell) => void }) {
+  if (to == null) return null
+  return (
+    <button type="button" className="blur-btn" onClick={() => onBlur(tell)} title="Rewrite this on your device, instantly">
+      Blur it{to ? <span className="blur-to"> to “{to}”</span> : <span className="blur-to"> (remove)</span>}
+    </button>
   )
 }
