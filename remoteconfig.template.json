@@ -1,0 +1,46 @@
+{
+  "parameters": {
+    "detective_model": {
+      "defaultValue": {
+        "value": "gemini-3.8-flash"
+      },
+      "description": "Cloud model that plays the investigator (needs Google Search grounding support).",
+      "valueType": "STRING"
+    },
+    "fast_model": {
+      "defaultValue": {
+        "value": "gemini-3.5-flash-lite"
+      },
+      "description": "Cloud fallback for on-device jobs and the report structurer.",
+      "valueType": "STRING"
+    },
+    "detective_use_search": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "Let the detective use Google Search grounding.",
+      "valueType": "BOOLEAN"
+    },
+    "min_confidence": {
+      "defaultValue": {
+        "value": "50"
+      },
+      "description": "Detective confidence (0-100) needed to count a correct guess as a full exposure.",
+      "valueType": "NUMBER"
+    },
+    "detective_prompt_version": {
+      "defaultValue": {
+        "value": "v1"
+      },
+      "description": "Prompt version label, shown in the benchmark export.",
+      "valueType": "STRING"
+    },
+    "meaning_check": {
+      "defaultValue": {
+        "value": "true"
+      },
+      "description": "After rewrites, check on the device that the post still says what the author meant.",
+      "valueType": "BOOLEAN"
+    }
+  }
+}

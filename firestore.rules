@@ -1,0 +1,37 @@
+rules_version = '2';
+
+// OneOfMany stores no posts, no vaults and no user data. The only document is
+// an opt-in counter of giveaway *types* (never text), which signed-in
+// (anonymous) users may increment by small amounts.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function prev(k) {
+      return resource == null ? 0 : resource.data.get(k, 0);
+    }
+
+    function bumped(k) {
+      let d = request.resource.data.get(k, 0) - prev(k);
+      return d >= 0 && d <= 30;
+    }
+
+    match /community/tells {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.resource.data.keys().hasOnly([
+          'employer', 'workplace_detail', 'location', 'team_or_role', 'time',
+          'event', 'demographic', 'relationship', 'style', 'other', 'runs', 'updatedAt'
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.get('runs', 0) - prev('runs') == 1
+        && bumped('employer') && bumped('workplace_detail') && bumped('location')
+        && bumped('team_or_role') && bumped('time') && bumped('event')
+        && bumped('demographic') && bumped('relationship') && bumped('style')
+        && bumped('other');
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
