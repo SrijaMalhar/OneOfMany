@@ -101,6 +101,13 @@ describe('grading', () => {
     expect(e.facts).toHaveLength(10)
   })
 
+  it('treats a verdict the user set by hand as final', () => {
+    const guesses: DetectiveGuess[] = [{ attribute: 'city', guess: 'Bangalore', confidence: 20, evidence: [], reasoning: '' }]
+    const profile = { city: 'Bengaluru' }
+    const e = exposure([{ attribute: 'city', verdict: 'exact', by: 'you' }], guesses, 50, profile)
+    expect(e.facts[2]).toEqual({ attribute: 'city', status: 'recovered' })
+  })
+
   it('counts vault facts the detective never tried as safe', () => {
     const guesses: DetectiveGuess[] = [{ attribute: 'city', guess: 'Bengaluru', confidence: 80, evidence: [], reasoning: '' }]
     const profile = { city: 'Bengaluru', country: 'India' }

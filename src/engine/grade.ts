@@ -87,6 +87,8 @@ export interface Exposure {
   facts: Fact[]
 }
 
+const OVERRIDE: Partial<Record<Verdict, FactStatus>> = { exact: 'recovered', close: 'narrowed', wrong: 'safe' }
+
 export function factStatus(verdict: Verdict | undefined, confidence: number, minConfidence: number): FactStatus {
   if (!verdict || verdict === 'no_truth') return 'empty'
   if (verdict === 'exact' && confidence >= minConfidence) return 'recovered'
@@ -100,11 +102,14 @@ export function factStatus(verdict: Verdict | undefined, confidence: number, min
  */
 export function exposure(grades: Grade[], guesses: DetectiveGuess[], minConfidence: number, profile?: Profile): Exposure {
   const conf = new Map(guesses.map((g) => [g.attribute, g.confidence]))
-  const byAttr = new Map(grades.map((g) => [g.attribute, g.verdict]))
+  const byAttr = new Map(grades.map((g) => [g.attribute, g]))
   const facts: Fact[] = ATTRIBUTES.map((attribute) => {
-    const filled = profile ? Boolean((profile[attribute] ?? '').trim()) : byAttr.has(attribute)
+    const grade = byAttr.get(attribute)
+    const filled = profile ? Boolean((profile[attribute] ?? '').trim()) : Boolean(grade)
     if (!filled) return { attribute, status: 'empty' as const }
-    return { attribute, status: factStatus(byAttr.get(attribute) ?? 'not_guessed', conf.get(attribute) ?? 0, minConfidence) }
+    // A verdict the user set by hand is final: no confidence threshold applies.
+    if (grade?.by === 'you') return { attribute, status: OVERRIDE[grade.verdict] ?? 'safe' }
+    return { attribute, status: factStatus(grade?.verdict ?? 'not_guessed', conf.get(attribute) ?? 0, minConfidence) }
   })
   const exposed = facts.filter((f) => f.status === 'recovered').length
   const partial = facts.filter((f) => f.status === 'narrowed').length
