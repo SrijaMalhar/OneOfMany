@@ -85,7 +85,11 @@ export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, s
       {!hasRuns ? (
         <div className="blank-file" aria-label="The detective’s file, still empty">
           <h3 className="cloud-h3">The detective’s file on you</h3>
-          <p className="muted">Empty for now. Send the detective to see which of these it can work out from your words alone.</p>
+          <p className="muted">
+            {vaultFacts
+              ? 'Empty for now. Send the detective to see which of these it can work out from your words alone.'
+              : 'Empty for now. Fill in your vault on the left, so your device can check which guesses are right.'}
+          </p>
           <FactTiles facts={blankFacts} blank />
         </div>
       ) : null}

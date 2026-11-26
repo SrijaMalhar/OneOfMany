@@ -34,7 +34,7 @@ export function Header({ online, device, cloudCalls, onHowItWorks, onReceipt }: 
         </button>
         <button type="button" className="top-btn" onClick={onReceipt}>
           <ReceiptIcon />
-          Cloud receipt
+          <span className="hide-sm">Cloud </span>receipt
           <span className="count" aria-label={`${cloudCalls} calls`}>
             {cloudCalls}
           </span>

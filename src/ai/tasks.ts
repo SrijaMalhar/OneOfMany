@@ -26,7 +26,7 @@ import { DETECTIVE_SCHEMA, FIX_SCHEMA, GRADE_SCHEMA, MEANING_SCHEMA, TELLS_SCHEM
 
 export async function findTells(draft: string, profile: Profile, s: Settings): Promise<{ tells: Tell[]; source: 'on_device' | 'in_cloud' }> {
   const model = modelFor({ job: 'lint', routing: 'device_first', cloudModel: s.fastModel, schema: TELLS_SCHEMA, temperature: 0.2 })
-  const r = await run({ task: 'Find tells', model, modelName: s.fastModel, routing: 'device_first', prompt: lintPrompt(draft), guard: { profile, draft } })
+  const r = await run({ task: 'Find giveaways', model, modelName: s.fastModel, routing: 'device_first', prompt: lintPrompt(draft), guard: { profile, draft } })
   const parsed = parseJson<{ tells: ModelTell[] }>(r.text)
   return { tells: modelTells(draft, parsed?.tells ?? [], r.source), source: r.source }
 }
@@ -240,7 +240,7 @@ export async function gradePrivately(
 export async function suggestFixes(draft: string, clues: string[], profile: Profile, s: Settings): Promise<{ fixes: Fix[]; source: 'on_device' | 'in_cloud' }> {
   if (!clues.length) return { fixes: [], source: 'on_device' }
   const model = modelFor({ job: 'rewrite', routing: 'device_first', cloudModel: s.fastModel, schema: FIX_SCHEMA, temperature: 0.3 })
-  const r = await run({ task: 'Rewrite clues', model, modelName: s.fastModel, routing: 'device_first', prompt: fixPrompt(draft, clues), guard: { profile, draft } })
+  const r = await run({ task: 'Rewrite giveaways', model, modelName: s.fastModel, routing: 'device_first', prompt: fixPrompt(draft, clues), guard: { profile, draft } })
   const parsed = parseJson<{ fixes: { original: string; replacement: string; reason: string }[] }>(r.text)
   const seen = new Set<string>()
   const fixes: Fix[] = []

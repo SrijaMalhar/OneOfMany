@@ -422,6 +422,7 @@ export default function App() {
               <Report
                 key={lastRun.id}
                 run={lastRun}
+                draft={draft}
                 graderLabel={graderLabel}
                 onEvidence={pointAtQuote}
                 onOverride={override}

@@ -7,6 +7,7 @@ import type { Exposure, Fact, FactStatus } from '../engine/grade'
 import { ATTRIBUTE_LABEL, type Attribute, type DetectiveGuess, type DetectiveReport, type Grade, type Verdict } from '../types'
 import { SourceBadge } from './Badges'
 import { SearchIcon } from './icons'
+import { locate } from '../engine/tells'
 
 export interface RunView {
   report: DetectiveReport
@@ -54,6 +55,8 @@ export function MiniStrip({ facts }: { facts: Fact[] }) {
 
 interface ReportProps {
   run: Run
+  /** The current draft, to tell evidence in it apart from evidence in earlier posts. */
+  draft: string
   graderLabel: string
   onEvidence: (quote: string) => void
   onOverride: (attribute: Attribute, verdict: Verdict, scope: 'alone' | 'history') => void
@@ -61,7 +64,7 @@ interface ReportProps {
   coolingDisabled: boolean
 }
 
-export function Report({ run, graderLabel, onEvidence, onOverride, onCoolDown, coolingDisabled }: ReportProps) {
+export function Report({ run, draft, graderLabel, onEvidence, onOverride, onCoolDown, coolingDisabled }: ReportProps) {
   const [scope, setScope] = useState<'alone' | 'history'>('alone')
   const view: RunView = scope === 'history' && run.history ? run.history : run
   const e = view.exposure
@@ -116,10 +119,10 @@ export function Report({ run, graderLabel, onEvidence, onOverride, onCoolDown, c
       <FactTiles facts={e.facts} />
 
       {recovered.length ? (
-        <Group title="What it got right" facts={recovered} guessFor={guessFor} graded={graded} onEvidence={onEvidence} onOverride={(a, v) => onOverride(a, v, scope)} />
+        <Group title="What it got right" facts={recovered} guessFor={guessFor} graded={graded} draft={draft} onEvidence={onEvidence} onOverride={(a, v) => onOverride(a, v, scope)} />
       ) : null}
       {narrowed.length ? (
-        <Group title="What it narrowed down" facts={narrowed} guessFor={guessFor} graded={graded} onEvidence={onEvidence} onOverride={(a, v) => onOverride(a, v, scope)} />
+        <Group title="What it narrowed down" facts={narrowed} guessFor={guessFor} graded={graded} draft={draft} onEvidence={onEvidence} onOverride={(a, v) => onOverride(a, v, scope)} />
       ) : null}
       {safe.length ? (
         <div className="missed">
@@ -157,6 +160,7 @@ function Group({
   facts,
   guessFor,
   graded,
+  draft,
   onEvidence,
   onOverride,
 }: {
@@ -164,6 +168,7 @@ function Group({
   facts: Fact[]
   guessFor: Map<Attribute, DetectiveGuess>
   graded: Map<Attribute, Grade>
+  draft: string
   onEvidence: (q: string) => void
   onOverride: (a: Attribute, v: Verdict) => void
 }) {
@@ -190,11 +195,17 @@ function Group({
               {g?.evidence.length ? (
                 <p className="evidence">
                   <span className="muted">Gave it away:</span>
-                  {g.evidence.map((q) => (
-                    <button key={q} type="button" className="quote" onClick={() => onEvidence(q)}>
-                      {q}
-                    </button>
-                  ))}
+                  {g.evidence.map((q) =>
+                    locate(draft, q) >= 0 ? (
+                      <button key={q} type="button" className="quote" onClick={() => onEvidence(q)}>
+                        {q}
+                      </button>
+                    ) : (
+                      <span key={q} className="quote is-elsewhere" title="Not in your draft: from an earlier post, or already rewritten">
+                        {q}
+                      </span>
+                    ),
+                  )}
                 </p>
               ) : null}
               <Override grade={grade} onOverride={(v) => onOverride(f.attribute, v)} />

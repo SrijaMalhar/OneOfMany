@@ -230,6 +230,7 @@ p {
 }
 
 .top-btn {
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -1739,6 +1740,13 @@ p {
   background: rgba(210, 29, 102, 0.14);
 }
 
+.quote.is-elsewhere {
+  border-style: dashed;
+  background: transparent;
+  color: var(--slate);
+  font-weight: 400;
+}
+
 .override {
   display: flex;
   flex-wrap: wrap;
@@ -2506,6 +2514,10 @@ dialog::backdrop {
 }
 
 @media (max-width: 640px) {
+  .hide-sm {
+    display: none;
+  }
+
   .gv-list {
     grid-template-columns: minmax(0, 1fr);
   }
