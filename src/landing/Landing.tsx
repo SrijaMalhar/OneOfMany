@@ -3,7 +3,6 @@
 // the cave hidden in the flock. Here the Cyclops is the AI detective, and
 // Nobody is you.
 
-import '@fontsource/bagel-fat-one/400.css'
 import './landing.css'
 import { useRef, useState } from 'react'
 import { HowItWorks } from '../ui/HowItWorks'

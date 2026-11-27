@@ -579,19 +579,45 @@ kbd {
   align-items: center;
   gap: 8px;
   color: var(--fg);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.012em;
+  font-family: 'Bagel Fat One', var(--font-sans);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0;
   text-decoration: none;
 }
 
 .mark {
   display: block;
+  margin: -3px 0;
   color: var(--fg);
 }
 
-.mark .mark-you {
-  fill: var(--device);
+.mark .nobody {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Nobody and the Cyclops, dressed for the tool's calmer colours. */
+:root {
+  --nb-wool: #d3d3d9;
+  --nb-face: #2a2a33;
+  --nb-pupil: #2a2a33;
+  --nb-mask: var(--device);
+  --cy-skin: #ebe9f1;
+  --cy-under: #dcd9e6;
+  --cy-brow: #d3d0df;
+  --cy-ink: #2a2a33;
+}
+
+[data-theme='dark'] {
+  --nb-wool: #4a4a56;
+  --nb-face: #d6d6de;
+  --nb-pupil: #16161a;
+  --cy-skin: #26262e;
+  --cy-under: #1e1e25;
+  --cy-brow: #33333d;
+  --cy-ink: #0d0d10;
 }
 
 .topbar-status {
@@ -800,10 +826,11 @@ kbd {
 }
 
 .title {
-  font-size: 26px;
-  font-weight: 600;
+  font-family: 'Bagel Fat One', var(--font-sans);
+  font-size: 28px;
+  font-weight: 400;
   line-height: 32px;
-  letter-spacing: -0.022em;
+  letter-spacing: -0.005em;
   text-wrap: balance;
 }
 
@@ -3171,6 +3198,77 @@ dialog.modal[open] {
 
 .strip-cell {
   transition: background-color var(--fast) var(--ease);
+}
+
+
+/* ------------------------------------------------------------ the mascot in the tool */
+
+.cy-watch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--sunken);
+  font-size: 13px;
+  color: var(--fg-2);
+}
+
+.cy-watch-eye {
+  flex: none;
+  width: 64px;
+}
+
+.cy-watch-eye .cyclops {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cy-watch .cy-iris {
+  animation: cy-read 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes cy-read {
+  from {
+    transform: translate(-46px, 10px);
+  }
+  to {
+    transform: translate(46px, 12px);
+  }
+}
+
+.peek {
+  position: relative;
+  margin-top: 30px;
+}
+
+.peek > .dossier {
+  position: relative;
+  z-index: 1;
+}
+
+.peek-nobody {
+  position: absolute;
+  top: -40px;
+  right: 22px;
+  z-index: 0;
+  width: 62px;
+  height: auto;
+  transition: translate 260ms var(--ease);
+}
+
+.peek.is-hiding .peek-nobody {
+  translate: 0 30px;
+}
+
+.hint .hint-nobody {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin: -5px -2px -5px -4px;
 }
 
 

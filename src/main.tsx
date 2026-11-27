@@ -1,5 +1,6 @@
 import '@fontsource-variable/geist/wght.css'
 import '@fontsource-variable/geist-mono/wght.css'
+import '@fontsource/bagel-fat-one/400.css'
 import './styles.css'
 
 import { StrictMode } from 'react'

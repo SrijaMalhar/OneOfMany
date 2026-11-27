@@ -1,0 +1,164 @@
+/* Nobody and the Cyclops. Every colour is a custom property with a fallback,
+   so the landing page and the tool can each dress them for their own
+   background. */
+
+.nobody .nb-wool {
+  fill: var(--nb-wool, var(--wool, #f4f0fb));
+}
+
+.nobody .nb-face,
+.nobody .nb-legs,
+.nobody .nb-hoof {
+  fill: var(--nb-face, var(--face, #2b2448));
+}
+
+.nobody .nb-white {
+  fill: var(--nb-white, #fff);
+}
+
+.nobody .nb-pupil {
+  fill: var(--nb-pupil, var(--ink, #1c1633));
+  transform: translate(calc(var(--lx, 0) * 0.95px), calc(var(--ly, 0) * 0.7px));
+  transition: transform 220ms var(--ease);
+}
+
+.nobody .nb-mask {
+  fill: var(--nb-mask, var(--mask, #9b82ff));
+}
+
+.nobody .nb-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nb-blink 5.2s infinite;
+}
+
+@keyframes nb-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+.nobody .nb-hoof {
+  transform-box: fill-box;
+  transform-origin: 50% 10%;
+  animation: nb-wave 1.4s ease-in-out infinite;
+}
+
+@keyframes nb-wave {
+  0%,
+  100% {
+    transform: rotate(-168deg);
+  }
+  50% {
+    transform: rotate(-128deg);
+  }
+}
+
+.cyclops .cy-skin {
+  fill: var(--cy-skin, var(--cave-3, #2f2659));
+  stroke: var(--cy-ink, #151029);
+  stroke-width: 8;
+}
+
+.cyclops .cy-under {
+  fill: var(--cy-under, var(--cave-2, #241d44));
+  opacity: 0.7;
+}
+
+.cyclops .cy-brow {
+  fill: var(--cy-brow, var(--cave-line, #41367a));
+}
+
+.cyclops .cy-crease,
+.cyclops .cy-bag {
+  fill: none;
+  stroke: var(--cy-under, var(--cave-2, #241d44));
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.cyclops .cy-white {
+  fill: #f2edfb;
+}
+
+.cyclops .cy-shade {
+  fill: #cfc6e6;
+  opacity: 0.55;
+}
+
+.cyclops .cy-iris {
+  transform: translate(calc(var(--px, 0) * 1px), calc(var(--py, 14) * 1px));
+}
+
+.cyclops .cy-iris-fill {
+  fill: var(--gold, #ffc53d);
+}
+
+.cyclops .cy-iris-ring {
+  fill: none;
+  stroke: var(--gold-2, #e9a514);
+  stroke-width: 5;
+}
+
+.cyclops .cy-fiber {
+  stroke: var(--gold-2, #e9a514);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.cyclops .cy-pupil {
+  fill: #120d22;
+}
+
+.cyclops .cy-glint {
+  fill: #fff;
+  opacity: 0.92;
+}
+
+.cyclops .cy-rim {
+  fill: none;
+  stroke: var(--cy-ink, #150f2b);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.cyclops .cy-rim-top {
+  stroke-width: 11;
+}
+
+.cyclops .cy-lashes line {
+  stroke: var(--cy-ink, #150f2b);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+.cyclops .cy-lid {
+  transform-origin: 210px 132px;
+  animation: cy-blink 7.5s infinite;
+}
+
+@keyframes cy-blink {
+  0%,
+  46%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+  49% {
+    transform: scaleY(0.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nobody .nb-eye,
+  .nobody .nb-hoof,
+  .cyclops .cy-lid {
+    animation: none;
+  }
+}

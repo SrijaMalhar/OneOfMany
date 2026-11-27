@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Fact } from '../engine/grade'
+import { CyclopsEye, Nobody } from '../landing/art'
 import { ArrowUpRightIcon, InfoIcon, LockIcon } from './icons'
 import { Dossier } from './Report'
 
@@ -102,6 +103,15 @@ export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, s
         {!blocker && !confirmed && !running ? <p className="send-hint">Tick the box above to continue.</p> : null}
       </div>
 
+      {running ? (
+        <div className="cy-watch" aria-hidden="true">
+          <span className="cy-watch-eye">
+            <CyclopsEye />
+          </span>
+          <span>The Cyclops is reading your words. It never sees your vault.</span>
+        </div>
+      ) : null}
+
       {state.status === 'error' ? (
         <p className="callout callout-bad" role="alert">
           {state.error}
@@ -119,7 +129,10 @@ export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, s
               ? 'Each line is a fact about you. Send the detective to see which ones it can work out from your words alone.'
               : 'Fill in your vault on the left, so your device can check which guesses are right.'}
           </p>
-          <Dossier facts={blankFacts} blank running={running} />
+          <div className={`peek${running ? ' is-hiding' : ''}`}>
+            <Nobody className="peek-nobody" look={{ x: -0.7, y: -0.9 }} />
+            <Dossier facts={blankFacts} blank running={running} />
+          </div>
         </div>
       ) : null}
     </section>

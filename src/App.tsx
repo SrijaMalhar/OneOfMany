@@ -42,6 +42,7 @@ import { Report, Runs, type Run, type RunView } from './ui/Report'
 import { Seam } from './ui/Seam'
 import { Threads, type Link } from './ui/Threads'
 import { now } from './ui/time'
+import { Nobody } from './landing/art'
 import { coach } from './ui/coach'
 import { useTheme } from './ui/theme'
 import { Toaster } from './ui/Toaster'
@@ -442,7 +443,7 @@ export default function App() {
 
             <div className="section">
               <p className={`hint tone-${hint.tone}`} role="status" aria-live="polite">
-                <InfoIcon />
+                {hint.tone === 'good' ? <Nobody className="hint-nobody" wave look={{ x: 0.4, y: -0.4 }} /> : <InfoIcon />}
                 <span>{hint.says}</span>
               </p>
               <Viewfinder

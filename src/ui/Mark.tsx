@@ -1,22 +1,11 @@
-// The OneOfMany mark: nine identical people, one of them you.
+// The OneOfMany mark: Nobody, the sheep in the violet mask.
+
+import { Nobody } from '../landing/art'
 
 export function Mark({ size = 20 }: { size?: number }) {
-  const dots = [
-    [7, 7],
-    [16, 7],
-    [25, 7],
-    [7, 16],
-    [25, 16],
-    [7, 25],
-    [16, 25],
-    [25, 25],
-  ]
   return (
-    <svg className="mark" viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
-      {dots.map(([x, y]) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r="3" fill="currentColor" opacity="0.38" />
-      ))}
-      <circle className="mark-you" cx="16" cy="16" r="3.4" />
-    </svg>
+    <span className="mark mark-nobody" style={{ width: size + 6, height: size + 6 }} aria-hidden="true">
+      <Nobody look={{ x: 0.3, y: -0.2 }} />
+    </span>
   )
 }

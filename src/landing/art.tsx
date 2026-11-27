@@ -2,6 +2,7 @@
 // in the flock. The Cyclops is the detective: one big eye that reads only
 // what you write. Both are flat SVG drawn from simple shapes.
 
+import './characters.css'
 import type { CSSProperties } from 'react'
 import { FACE, MASK, SHEEP_VIEWBOX, TUFT, WOOL } from '../ui/sheepShape'
 

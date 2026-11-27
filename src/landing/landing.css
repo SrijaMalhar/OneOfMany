@@ -208,65 +208,6 @@
   height: 18px;
 }
 
-/* ------------------------------------------------------------ characters */
-
-.nobody .nb-wool {
-  fill: var(--nb-wool, var(--wool));
-}
-
-.nobody .nb-face,
-.nobody .nb-legs,
-.nobody .nb-hoof {
-  fill: var(--nb-face, var(--face));
-}
-
-.nobody .nb-white {
-  fill: #fff;
-}
-
-.nobody .nb-pupil {
-  fill: var(--ink);
-  transform: translate(calc(var(--lx, 0) * 0.95px), calc(var(--ly, 0) * 0.7px));
-  transition: transform 220ms var(--ease);
-}
-
-.nobody .nb-mask {
-  fill: var(--mask);
-}
-
-.nobody .nb-eye {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: nb-blink 5.2s infinite;
-}
-
-@keyframes nb-blink {
-  0%,
-  92%,
-  100% {
-    transform: scaleY(1);
-  }
-  95% {
-    transform: scaleY(0.1);
-  }
-}
-
-.nobody .nb-hoof {
-  transform-box: fill-box;
-  transform-origin: 50% 10%;
-  animation: nb-wave 1.4s ease-in-out infinite;
-}
-
-@keyframes nb-wave {
-  0%,
-  100% {
-    transform: rotate(-168deg);
-  }
-  50% {
-    transform: rotate(-128deg);
-  }
-}
-
 .flock-sheep {
   display: block;
   width: 100%;
@@ -276,100 +217,20 @@
   --sheep-eye: var(--wool);
 }
 
-.cyclops .cy-skin {
-  fill: var(--cave-3);
-  stroke: #151029;
-  stroke-width: 8;
+/* The characters take the landing page's colours, read where they stand,
+   so a lit sheep's wool changes with it. */
+.lp .nobody {
+  --nb-wool: var(--wool);
+  --nb-face: var(--face);
+  --nb-pupil: var(--ink);
+  --nb-mask: var(--mask);
 }
 
-.cyclops .cy-under {
-  fill: var(--cave-2);
-  opacity: 0.7;
-}
-
-.cyclops .cy-brow {
-  fill: var(--cave-line);
-}
-
-.cyclops .cy-crease,
-.cyclops .cy-bag {
-  fill: none;
-  stroke: var(--cave-2);
-  stroke-width: 5;
-  stroke-linecap: round;
-}
-
-.cyclops .cy-white {
-  fill: #f2edfb;
-}
-
-.cyclops .cy-shade {
-  fill: #cfc6e6;
-  opacity: 0.55;
-}
-
-.cyclops .cy-iris {
-  transform: translate(calc(var(--px, 0) * 1px), calc(var(--py, 14) * 1px));
-}
-
-.cyclops .cy-iris-fill {
-  fill: var(--gold);
-}
-
-.cyclops .cy-iris-ring {
-  fill: none;
-  stroke: var(--gold-2);
-  stroke-width: 5;
-}
-
-.cyclops .cy-fiber {
-  stroke: var(--gold-2);
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  opacity: 0.7;
-}
-
-.cyclops .cy-pupil {
-  fill: #120d22;
-}
-
-.cyclops .cy-glint {
-  fill: #fff;
-  opacity: 0.92;
-}
-
-.cyclops .cy-rim {
-  fill: none;
-  stroke: #150f2b;
-  stroke-width: 7;
-  stroke-linecap: round;
-}
-
-.cyclops .cy-rim-top {
-  stroke-width: 11;
-}
-
-.cyclops .cy-lashes line {
-  stroke: #150f2b;
-  stroke-width: 7;
-  stroke-linecap: round;
-}
-
-.cyclops .cy-lid {
-  transform-origin: 210px 132px;
-  animation: cy-blink 7.5s infinite;
-}
-
-@keyframes cy-blink {
-  0%,
-  46%,
-  52%,
-  100% {
-    transform: scaleY(1);
-  }
-  49% {
-    transform: scaleY(0.04);
-  }
+.lp .cyclops {
+  --cy-skin: var(--cave-3);
+  --cy-under: var(--cave-2);
+  --cy-brow: var(--cave-line);
+  --cy-ink: #151029;
 }
 
 /* ------------------------------------------------------------ hero */
@@ -1412,7 +1273,7 @@
   text-align: center;
 }
 
-.finale-nobody {
+.lp .finale-nobody {
   width: clamp(150px, 16vw, 220px);
   height: auto;
   --nb-wool: #fff;
@@ -1490,13 +1351,5 @@
 
   .lp-foot {
     padding: 24px 16px 32px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .nobody .nb-eye,
-  .nobody .nb-hoof,
-  .cyclops .cy-lid {
-    animation: none;
   }
 }
