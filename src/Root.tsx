@@ -1,8 +1,8 @@
-// Three pages: the front door, the tool at #check, and the benchmark at #bench.
+// Three pages: the landing page, the tool at #check, and the benchmark at #bench.
 
 import { lazy, Suspense, useEffect, useState } from 'react'
 import App from './App'
-import { Intro } from './ui/Intro'
+import Landing from './landing/Landing'
 
 const Bench = lazy(() => import('./bench/Bench'))
 
@@ -24,5 +24,5 @@ export default function Root() {
     )
   }
   if (hash === '#check') return <App />
-  return <Intro onStart={() => (location.hash = 'check')} />
+  return <Landing onStart={() => (location.hash = 'check')} />
 }
