@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Fact } from '../engine/grade'
-import { CyclopsEye, Nobody } from '../landing/art'
+import { Nobody } from '../landing/art'
 import { ArrowUpRightIcon, InfoIcon, LockIcon } from './icons'
 import { Dossier } from './Report'
 
@@ -102,15 +102,6 @@ export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, s
         {blocker && !running ? <p className="send-hint">{blocker}</p> : null}
         {!blocker && !confirmed && !running ? <p className="send-hint">Tick the box above to continue.</p> : null}
       </div>
-
-      {running ? (
-        <div className="cy-watch" aria-hidden="true">
-          <span className="cy-watch-eye">
-            <CyclopsEye />
-          </span>
-          <span>The Cyclops is reading your words. It never sees your vault.</span>
-        </div>
-      ) : null}
 
       {state.status === 'error' ? (
         <p className="callout callout-bad" role="alert">

@@ -40,6 +40,7 @@ import { CloudIcon, LockIcon } from './ui/icons'
 import { Receipt } from './ui/Receipt'
 import { Report, Runs, type Run, type RunView } from './ui/Report'
 import { Seam } from './ui/Seam'
+import { SuspectPool } from './ui/SuspectPool'
 import { Threads, type Link } from './ui/Threads'
 import { now } from './ui/time'
 import { Nobody } from './landing/art'
@@ -508,6 +509,7 @@ export default function App() {
             </div>
           </div>
           <div className="pane-body">
+            <SuspectPool draft={draft} tells={tells} current={current} running={det.status === 'running'} />
             <Detective
               state={det}
               words={words}
