@@ -9,6 +9,7 @@ import { locate } from '../engine/tells'
 import { ATTRIBUTE_LABEL, type Attribute, type DetectiveGuess, type DetectiveReport, type Grade, type Verdict } from '../types'
 import { SourceBadge } from './Badges'
 import { SearchIcon } from './icons'
+import { RunChart } from './RunChart'
 
 export interface RunView {
   report: DetectiveReport
@@ -462,6 +463,7 @@ export function Runs({ runs }: { runs: Run[] }) {
           </span>
         ) : null}
       </div>
+      <RunChart runs={runs} />
       <ol className="list">
         {runs.map((r, i) => (
           <li key={r.id} className="run">

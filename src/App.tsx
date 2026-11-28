@@ -28,6 +28,7 @@ import {
 } from './store'
 import { ATTRIBUTES, type Attribute, type Grade, type Profile, type Source, type Verdict } from './types'
 import { BeforeYouPost } from './ui/BeforeYouPost'
+import { platformOf } from './ui/platform'
 import { Detective, type DetectiveState } from './ui/Detective'
 import { EarlierPosts } from './ui/EarlierPosts'
 import { friendly } from './ui/errors'
@@ -587,7 +588,16 @@ export default function App() {
               </div>
             ) : null}
             <Runs runs={runs} />
-            {runs.length ? <BeforeYouPost key={runs[0].id} score={current ? current.score : null} onCopy={copyPost} copied={copied} /> : null}
+            {runs.length ? (
+              <BeforeYouPost
+                key={runs[0].id}
+                score={current ? current.score : null}
+                onCopy={copyPost}
+                copied={copied}
+                initialPlatform={isSample ? platformOf(sample?.where) : undefined}
+                vaultValuesSent={audit.vaultValuesSent}
+              />
+            ) : null}
           </div>
         </div>
       </main>
