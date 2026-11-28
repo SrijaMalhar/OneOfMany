@@ -1,9 +1,9 @@
 """Draws the README art in docs/readme/: Nobody (light and dark) and the hero
-banner (light and dark). Text is converted to outlines, because GitHub won't
-load web fonts inside an SVG.
+banner (light and dark), in the same paper-and-ink look as the site. Text
+is converted to outlines, because GitHub won't load web fonts inside an SVG.
 
     pip install fonttools brotli uharfbuzz
-    npm install            # for the Geist font files
+    npm install            # for the Newsreader, Courier Prime and Kalam files
     python3 scripts/readme_art.py
 
 The social preview PNG is a screenshot of hero-light.svg at 1280x640.
@@ -12,6 +12,8 @@ The social preview PNG is a screenshot of hero-light.svg at 1280x640.
 from __future__ import annotations
 
 import io
+import re
+from functools import lru_cache
 from pathlib import Path
 
 import uharfbuzz as hb
@@ -22,28 +24,41 @@ from fontTools.varLib.instancer import instantiateVariableFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "readme"
-GEIST = ROOT / "node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2"
+FILES = ROOT / "node_modules"
+SERIF = FILES / "@fontsource-variable/newsreader/files/newsreader-latin-opsz-normal.woff2"
+SERIF_ITALIC = FILES / "@fontsource-variable/newsreader/files/newsreader-latin-opsz-italic.woff2"
+MONO = FILES / "@fontsource/courier-prime/files/courier-prime-latin-700-normal.woff2"
 
 THEMES = {
     "light": {
-        "page": "#f8f8f9",
-        "edge": "#e6e6ea",
-        "fg": "#18181b",
-        "fg3": "#6d6d77",
-        "wool": "#d3d3d9",
-        "face": "#3b3b43",
-        "mask": "#6e56cf",
-        "eye": "#f8f8f9",
+        "paper": "#fdfbf6",
+        "edge": "#221e18",
+        "shadow": "#221e18",
+        "rule": "#c8d8ec",
+        "margin": "#eaa29a",
+        "fg": "#221e18",
+        "fg3": "#776e60",
+        "wool": "#fffdf8",
+        "face": "#2c2720",
+        "line": "#221e18",
+        "mask": "#6249cf",
+        "eye": "#fffdf8",
+        "red": "#cf3a2f",
     },
     "dark": {
-        "page": "#0f0f11",
-        "edge": "#29292f",
-        "fg": "#ececef",
-        "fg3": "#8d8d97",
-        "wool": "#3b3b43",
-        "face": "#b4b4bc",
-        "mask": "#a898fa",
-        "eye": "#0f0f11",
+        "paper": "#23201b",
+        "edge": "#5e5748",
+        "shadow": "#070605",
+        "rule": "#2c3442",
+        "margin": "#5a2e2a",
+        "fg": "#efe8da",
+        "fg3": "#998f7e",
+        "wool": "#ece5d5",
+        "face": "#1a1813",
+        "line": "#0c0b09",
+        "mask": "#b4a3ff",
+        "eye": "#ece5d5",
+        "red": "#e65a4d",
     },
 }
 
@@ -78,6 +93,9 @@ def sheep(t: dict, masked: bool) -> str:
     )
     legs = '<rect x="20" y="44" width="5" height="14" rx="2.5"/><rect x="35" y="44" width="5" height="14" rx="2.5"/>'
     parts = [
+        # The silhouette, stroked and drawn first, leaves an ink outline
+        # around the outside once the fills go on top.
+        f'<g fill="{t["line"]}" stroke="{t["line"]}" stroke-width="3.2" stroke-linejoin="round">{legs}{circles(WOOL)}{ears}</g>',
         f'<g fill="{t["face"]}">{legs}</g>',
         f'<g fill="{t["wool"]}">{circles(WOOL)}</g>',
         f'<g fill="{t["face"]}">{ears}<path d="{FACE}"/></g>',
@@ -101,20 +119,21 @@ def nobody_svg(t: dict) -> str:
 # ------------------------------------------------------------------ text as outlines
 
 
-def load_font(weight: int) -> tuple[TTFont, hb.Font]:
-    font = TTFont(GEIST)
+@lru_cache(maxsize=None)
+def load_font(path: Path, axes: tuple[tuple[str, float], ...]) -> tuple[TTFont, hb.Font]:
+    font = TTFont(path)
     font.flavor = None
-    static = instantiateVariableFont(font, {"wght": weight}, inplace=False)
+    if axes:
+        font = instantiateVariableFont(font, dict(axes), inplace=False)
     buf = io.BytesIO()
-    static.save(buf)
+    font.save(buf)
     data = buf.getvalue()
-    hb_font = hb.Font(hb.Face(hb.Blob(data)))
-    return TTFont(io.BytesIO(data)), hb_font
+    return TTFont(io.BytesIO(data)), hb.Font(hb.Face(hb.Blob(data)))
 
 
-def text_path(text: str, weight: int, size: float, x: float, y: float, tracking_em: float = 0.0) -> tuple[str, float]:
+def text_path(text: str, font_file: Path, size: float, x: float, y: float, axes: dict | None = None, tracking_em: float = 0.0) -> tuple[str, float]:
     """Returns an SVG path for `text` with its baseline at (x, y), and its width."""
-    ft, font = load_font(weight)
+    ft, font = load_font(font_file, tuple(sorted((axes or {}).items())))
     upem = ft["head"].unitsPerEm
     buf = hb.Buffer()
     buf.add_str(text)
@@ -136,27 +155,41 @@ def text_path(text: str, weight: int, size: float, x: float, y: float, tracking_
 
 # ------------------------------------------------------------------ hero banner
 
+# The red-pencil ring from the site's headline, drawn in a 200x100 box.
+RING = "M34 16C86 0 172 4 190 40C202 72 146 96 92 93C38 90 4 72 10 46C15 26 48 12 104 9"
 
-def mark(t: dict, x: float, y: float, size: float) -> str:
-    s = size / 32
-    dots = [(7, 7), (16, 7), (25, 7), (7, 16), (25, 16), (7, 25), (16, 25), (25, 25)]
-    grey = "".join(f'<circle cx="{x + cx * s:.2f}" cy="{y + cy * s:.2f}" r="{3 * s:.2f}"/>' for cx, cy in dots)
-    return (
-        f'<g fill="{t["fg"]}" fill-opacity="0.38">{grey}</g>'
-        f'<circle cx="{x + 16 * s:.2f}" cy="{y + 16 * s:.2f}" r="{3.4 * s:.2f}" fill="{t["mask"]}"/>'
-    )
+
+def ring(x: float, y: float, w: float, h: float) -> str:
+    nums = iter(float(n) for n in re.findall(r"-?\d+(?:\.\d+)?", RING))
+    out = []
+    for cmd in re.findall(r"[MC]", RING):
+        k = 1 if cmd == "M" else 3
+        pts = []
+        for _ in range(k):
+            px, py = next(nums), next(nums)
+            pts.append(f"{x + px / 200 * w:.1f} {y + py / 100 * h:.1f}")
+        out.append(cmd + " ".join(pts))
+    return "".join(out)
 
 
 def hero_svg(t: dict) -> str:
     w, h = 1280, 640
-    left = 104
-    word, _ = text_path("OneOfMany", 600, 104, left, 330, -0.022)
-    line1, _ = text_path("Your account is anonymous.", 400, 38, left + 2, 410, -0.011)
-    line2, _ = text_path("Is your post?", 400, 38, left + 2, 462, -0.011)
+    left = 116
+    serif = {"wght": 400, "opsz": 36}
+    # Text sits on the ruled lines, 46px apart, the way handwriting would.
+    label, _ = text_path("A PRIVACY CHECK FOR ANONYMOUS POSTS", MONO, 18, left + 4, 198, tracking_em=0.08)
+    word, _ = text_path("OneOfMany", SERIF_ITALIC, 100, left, 336, {"wght": 700, "opsz": 72}, -0.02)
+    line1, _ = text_path("Your account is anonymous.", SERIF, 42, left + 4, 428, serif, -0.01)
+    lead, lead_w = text_path("Is your ", SERIF, 42, left + 4, 474, serif, -0.01)
+    post, post_w = text_path("post?", SERIF, 42, left + 4 + lead_w, 474, serif, -0.01)
+    circle = ring(left + 4 + lead_w - 6, 432, post_w + 22, 58)
+
+    # Ruled lines and a red margin, like a page of the notebook.
+    rules = "".join(f'<line x1="10" x2="{w - 22}" y1="{y}" y2="{y}"/>' for y in range(64, h - 30, 46))
 
     # A 3x3 flock on the right; the middle one is Nobody.
-    cell, scale = 150, 2.15
-    gx, gy = 736, (h - 3 * cell) / 2 + 2
+    cell, scale = 138, 1.95
+    gx, gy = 800, (h - 3 * cell) / 2 - 6
     flock = []
     for row in range(3):
         for col in range(3):
@@ -166,13 +199,18 @@ def hero_svg(t: dict) -> str:
 
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img" '
-        'aria-label="OneOfMany. Your account is anonymous. Is your post? A flock of nine identical sheep; '
+        'aria-label="OneOfMany. Your account is anonymous. Is your post? A flock of nine identical sheep on a notebook page; '
         'the one in the middle, Nobody, wears a small violet mask.">'
-        f'<rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="24" fill="{t["page"]}" stroke="{t["edge"]}"/>'
-        f"{mark(t, left + 2, 160, 56)}"
+        f'<rect x="14" y="14" width="{w - 20}" height="{h - 20}" rx="10" fill="{t["shadow"]}"/>'
+        f'<rect x="4" y="4" width="{w - 20}" height="{h - 20}" rx="10" fill="{t["paper"]}" stroke="{t["edge"]}" stroke-width="3"/>'
+        f'<g stroke="{t["rule"]}" stroke-width="1.5">{rules}</g>'
+        f'<line x1="80" x2="80" y1="6" y2="{h - 18}" stroke="{t["margin"]}" stroke-width="2"/>'
+        f'<path d="{label}" fill="{t["fg3"]}"/>'
         f'<path d="{word}" fill="{t["fg"]}"/>'
-        f'<path d="{line1}" fill="{t["fg3"]}"/>'
-        f'<path d="{line2}" fill="{t["fg3"]}"/>'
+        f'<path d="{line1}" fill="{t["fg"]}"/>'
+        f'<path d="{lead}" fill="{t["fg"]}"/>'
+        f'<path d="{post}" fill="{t["fg"]}"/>'
+        f'<path d="{circle}" fill="none" stroke="{t["red"]}" stroke-width="4" stroke-linecap="round"/>'
         f'{"".join(flock)}'
         "</svg>\n"
     )

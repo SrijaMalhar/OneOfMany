@@ -60,11 +60,22 @@ Existing tools either strip names with pattern matching, or "anonymise" your tex
       <p><b>Rewrite and test again.</b> Apply suggested rewrites, check that the post still says what you meant, and send the detective again until you're one of many.</p>
     </td>
   </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <p><b>Watch the suspect pool.</b> Thirty sheep stand under the Cyclops's eye. Each giveaway crosses some out in red pencil as you type; after a run, the pool follows what the detective actually worked out.</p>
+    </td>
+    <td width="33%" valign="top">
+      <p><b>Read it like the detective.</b> One tab fades every word that isn't a clue and tags the rest with what they give away. Blur all cools every giveaway with a safe rewrite in one click.</p>
+    </td>
+    <td width="33%" valign="top">
+      <p><b>Check it doesn't sound like you.</b> On-device rules find writing habits that link accounts, and compare the draft with something you wrote under your real name, which never leaves the browser.</p>
+    </td>
+  </tr>
 </table>
 
 ## How it works
 
-The interface is split the way the system is split. The left pane is your device: the draft, its giveaways and your vault. The right pane is the cloud: the detective and the file it builds on you. Between them runs a profile firewall, and the header shows how many vault values have crossed it. It should always read 0.
+The interface is split the way the system is split, and drawn as a detective's desk. The left pane is your device: a notebook with the draft, its giveaways in highlighter, a style check and your vault in a sealed envelope. The right pane is the cloud: a manila case file with the suspect pool, the detective and the file it builds on you, stamped Found, Close or Missed. Between them runs the profile firewall, drawn as police tape, and the header shows how many vault values have crossed it. It should always read 0.
 
 ```mermaid
 flowchart LR
@@ -112,7 +123,7 @@ sequenceDiagram
 2. **Send the detective.** A cloud Gemini model plays a skilled investigator. It sees only the post and returns guesses for ten facts (employer, industry, city, country, team, role, seniority, time at the job, age and gender) with confidence, quoted evidence and a rough size of the crowd you'd hide in. Earlier posts from the same account can be added, because clues add up across posts. If a model is slow or unavailable, the detective steps down to the next one and remembers that for the session.
 3. **Grade privately.** Gemini Nano compares each guess with your vault, on your device. Synonyms and old names count ("Bangalore" is "Bengaluru"). Wrong guesses are never shown.
 4. **Rewrite.** Nano suggests vaguer wording for each giveaway, shown as a diff. A **meaning kept** check then compares the rewrite with your original on the device, so you don't scrub away your own point.
-5. **Test again.** Every run is kept, so you can watch exposure fall run by run.
+5. **Test again.** Every run is kept and charted, so you can watch exposure fall run by run. A checklist then covers what the words can't: timing, devices, accounts and photo metadata, with advice for Reddit, Glassdoor, Blind or a work forum.
 
 ## Why hybrid, job by job
 
@@ -135,6 +146,7 @@ Every result shows its real `inferenceSource` from the SDK, never a guess: "On t
 - **Receipt.** A side sheet lists every AI call in the tab: task, routing, real inference source, latency, firewall result and the exact text sent. It re-audits every cloud payload against the vault, independently of the firewall.
 - **Firewall self-test.** One click builds a request that contains a vault value and pushes it through the real firewall, to a stub that can't reach the network.
 - **Device-only means device-only.** Before any `ONLY_ON_DEVICE` job, the app checks Chrome's `LanguageModel` availability itself and refuses to send if no local model is ready.
+- **Style checks stay local.** Writing habits and the style match are plain rules in the browser. The sample of your real writing is kept in session storage, cleared by Forget everything, and never sent anywhere, not even to Gemini Nano.
 - **Nothing stored server-side.** Firestore holds a single opt-in counter of giveaway types. No text, no vaults, no accounts beyond anonymous auth.
 - **No names, ever.** The detective is told never to output names, usernames, emails, phone numbers or addresses, and its output schema has no field for them.
 
@@ -258,7 +270,8 @@ We'd rather name these than have you find them:
 - **Differences between drafts.** The cloud sees every version you test. Suggested rewrites are chosen without the vault and each detective call is stateless, but edits you make by hand could map to correct guesses.
 - **One run is one sample.** Two runs on the same text can differ. Treat a low score as "harder to find", not "safe".
 - **Up to three earlier posts.** Real attackers can read an account's whole history.
-- **Text only.** Posting times, account history, writing style and file metadata can also identify you.
+- **Text only.** Posting times, account history and file metadata can also identify you. Writing style is checked with rules on short samples, so the style match is a rough guide, not stylometry you could rely on in court.
+- **The suspect pool is a picture, not a census.** It shows how details multiply, using fixed weights per clue; the detective's own crowd estimate is in its file.
 - **The cloud provider processes your draft,** which is text you intend to publish. Your vault never leaves the device.
 
 ## Why the name
@@ -268,7 +281,7 @@ We'd rather name these than have you find them:
   <img align="right" width="128" src="docs/readme/nobody.svg" alt="Nobody, a sheep in a small violet mask">
 </picture>
 
-In the Odyssey, Odysseus tells the one-eyed Cyclops that his name is Nobody, then slips out of the cave hidden among the flock. OneOfMany does the same for your post: the cloud detective gets your words, never your name, and you leave as one of many. The sheep in the mask is Nobody. On the landing page the detective is drawn as the Cyclops: one gold eye that sweeps the flock looking for you.
+In the Odyssey, Odysseus tells the one-eyed Cyclops that his name is Nobody, then slips out of the cave hidden among the flock. OneOfMany does the same for your post: the cloud detective gets your words, never your name, and you leave as one of many. The sheep in the mask is Nobody. The detective is drawn as the Cyclops: one gold eye, inked onto kraft paper, that sweeps its highlighter beam over the flock looking for you.
 
 <br clear="right">
 
@@ -276,7 +289,7 @@ In the Odyssey, Odysseus tells the one-eyed Cyclops that his name is Nobody, the
 
 - A Chrome extension that adds "Check before posting" to Reddit, Glassdoor and other comment boxes, using the same engine.
 - An Android client with Gemini Nano through Firebase AI Logic, sharing the vault design.
-- Writing-style giveaways: measuring and flattening style fingerprints, not only facts.
+- Rewrites that flatten writing habits as well as facts, using the style check's findings.
 
 ## License
 

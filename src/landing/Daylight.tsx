@@ -7,9 +7,12 @@ import { FlockSheep, Nobody } from './art'
 const KIT = [
   { name: 'The detective', body: 'A Gemini model reads your post the way a stranger would and works out what it can: city, team, employer, age.' },
   { name: 'The detective’s file', body: 'Every guess, checked against your vault on your device and stamped Found, Close or Missed.' },
+  { name: 'A suspect pool', body: 'Thirty sheep under the eye. Each giveaway crosses some out in red pencil as you type, so you see what a detail costs.' },
+  { name: 'Read it like the detective', body: 'A view of your draft with everything faded except the clues, each tagged with what it gives away.' },
+  { name: 'Does it sound like you?', body: 'Writing habits that link accounts, and a comparison with your real writing. Rules on your device; nothing is sent.' },
   { name: 'Deep scan', body: 'An AI pass for the subtle giveaways simple rules miss. It runs on Gemini Nano in Chrome when it can, in the cloud when it can’t.' },
   { name: 'Earlier posts', body: 'Paste what this account posted before. The detective links them, the way a real investigator would.' },
-  { name: 'Rewrites that keep your meaning', body: 'Each fix is checked on your device, so your post still says what you meant.' },
+  { name: 'Rewrites that keep your meaning', body: 'Blur every giveaway in one click, or take suggested rewrites, each checked on your device so your post still says what you meant.' },
   { name: 'A firewall for your vault', body: 'Any AI call carrying a detail from your vault is stopped before it leaves. Test it yourself.' },
   { name: 'A receipt', body: 'Every AI call, where it ran, and how many of your details went out. It should always say zero.' },
   { name: 'A public benchmark', body: '30 fictional posts, attacked, rewritten and attacked again, so anyone can check the numbers.' },
