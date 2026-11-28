@@ -3870,6 +3870,121 @@ dialog.modal[open] {
   transition: transform 600ms var(--ease);
 }
 
+/* ------------------------------------------------------------ the notebook's two views */
+
+/* Bookmark tabs on the top edge of the notebook. */
+.vf:has(.vf-tabs) {
+  margin-top: 24px;
+}
+
+.vf-tabs {
+  position: absolute;
+  right: 18px;
+  bottom: 100%;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.vf-tabs button {
+  height: 27px;
+  padding: 0 12px;
+  border: 1.5px solid var(--edge);
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  background: var(--sunken);
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.vf-tabs button:hover:not(:disabled) {
+  color: var(--fg);
+}
+
+.vf-tabs button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vf-tabs button[aria-pressed='true'] {
+  height: 31px;
+  background: var(--panel);
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.vf-stack[hidden] {
+  display: none;
+}
+
+/* Read like the detective: clues tagged, the rest faded back. */
+.vf-xray {
+  min-height: 262px;
+  padding: 26px 22px 30px 62px;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 28px;
+  font-variation-settings: 'opsz' 16;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.xr-stat {
+  font-family: var(--font-hand);
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--bad-mark);
+  white-space: normal;
+}
+
+.xr-dim {
+  color: var(--fg-4);
+}
+
+.xr-clue mark {
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.xr-clue mark:focus-visible {
+  outline: 2px dashed var(--focus);
+  outline-offset: 2px;
+}
+
+.xr-tag {
+  display: inline-block;
+  margin: 0 5px 0 4px;
+  padding: 0 5px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: 2px;
+  rotate: -2deg;
+}
+
+.xr-clue.heat-hottest .xr-tag {
+  color: var(--bad-mark);
+}
+
+.xr-clue.heat-hot .xr-tag {
+  color: var(--hot);
+}
+
+.xr-clue.heat-warm .xr-tag {
+  color: var(--warn);
+}
+
 /* ------------------------------------------------------------ responsive */
 
 @media (max-width: 1040px) {

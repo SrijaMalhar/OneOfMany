@@ -15,20 +15,29 @@ interface Props {
   /** The instant, on-device rewrite for a giveaway, if there is a safe one. */
   blurOf: (t: HeatTell) => string | null
   onBlur: (t: HeatTell) => void
+  /** Blur every giveaway that has a safe rewrite, at once. */
+  onBlurAll: () => void
 }
 
-export function Giveaways({ tells, onPick, blurOf, onBlur }: Props) {
+export function Giveaways({ tells, onPick, blurOf, onBlur, onBlurAll }: Props) {
   const [all, setAll] = useState(false)
   if (!tells.length) return null
   const sorted = [...tells].sort((a, b) => HEAT_RANK[b.heat] - HEAT_RANK[a.heat] || a.start - b.start)
   const shown = all ? sorted : sorted.slice(0, SHOWN)
+  const blurrable = tells.filter((t) => blurOf(t) != null).length
   return (
     <section className="section" aria-labelledby="gv-title">
       <div className="section-head">
         <h2 id="gv-title" className="section-title">
           What gives you away <span className="count">{tells.length}</span>
         </h2>
-        <span className="small muted hide-sm">Select one to find it in your draft</span>
+        {blurrable > 1 ? (
+          <button type="button" className="btn btn-sm" onClick={onBlurAll} data-tip="Swap each one for a vaguer word, on this device. You can undo it." data-tip-align="end">
+            Blur all {blurrable}
+          </button>
+        ) : (
+          <span className="small muted hide-sm">Select one to find it in your draft</span>
+        )}
       </div>
       <ul className="list">
         {shown.map((t, i) => {

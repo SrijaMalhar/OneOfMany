@@ -1,16 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { blurFor, blurSpan, replaceSpan } from './blur'
+import { blurAll, blurFor, blurSpan, replaceSpan } from './blur'
 import { ruleTells } from './tells'
-
-function blurAll(draft: string): string {
-  let out = draft
-  // Apply right to left so earlier offsets stay valid.
-  for (const t of [...ruleTells(draft)].reverse()) {
-    const b = blurSpan(out, t)
-    if (b) out = replaceSpan(out, b.start, b.end, b.replacement)
-  }
-  return out
-}
 
 describe('blur', () => {
   it('makes common giveaways vaguer without a model', () => {
@@ -40,8 +30,25 @@ describe('blur', () => {
   })
 
   it('cools a whole draft', () => {
-    const out = blurAll("Since the reorg in March I've been here 2 years. I'm 34 and the only woman engineer, paged at 3am!!!")
+    const draft = "Since the reorg in March I've been here 2 years. I'm 34 and the only woman engineer, paged at 3am!!!"
+    const { draft: out, count } = blurAll(draft, ruleTells(draft))
     expect(out).not.toMatch(/March|2 years|34|3am|!!!/)
     expect(out).toContain('recently')
+    expect(count).toBeGreaterThanOrEqual(5)
+  })
+
+  it('leaves giveaways with no safe rewrite for the AI, and counts only what changed', () => {
+    const draft = 'I work on the UPI settlement service in March.'
+    const tells = [
+      { start: 14, end: 36, text: 'UPI settlement service' },
+      { start: 37, end: 45, text: 'in March' },
+    ]
+    const { draft: out, count } = blurAll(draft, tells)
+    expect(count).toBe(1)
+    expect(out).toBe('I work on the UPI settlement service recently.')
+  })
+
+  it('changes nothing when there is nothing to blur', () => {
+    expect(blurAll('A plain sentence.', [])).toEqual({ draft: 'A plain sentence.', count: 0 })
   })
 })

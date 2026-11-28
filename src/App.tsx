@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { audit as auditRecords } from './ai/receipt'
 import { prepareDeviceModel } from './ai/models'
 import { checkMeaning, findTells, gradePrivately, runDetective, suggestFixes, testFirewall, type FirewallTestResult } from './ai/tasks'
-import { blurSpan, replaceSpan } from './engine/blur'
+import { blurAll, blurSpan, replaceSpan } from './engine/blur'
 import { applyFixes, cluesToRewrite } from './engine/fixes'
 import { exposure, type Fact } from './engine/grade'
 import { contentWords } from './engine/meaning'
@@ -49,7 +49,7 @@ import { useTheme } from './ui/theme'
 import { Toaster } from './ui/Toaster'
 import { toast } from './ui/toasts'
 import { Vault } from './ui/Vault'
-import { Viewfinder } from './ui/Viewfinder'
+import { Viewfinder, type DraftView } from './ui/Viewfinder'
 
 const MIN_WORDS = 15
 
@@ -149,6 +149,7 @@ export default function App() {
   }, [deviceReady, draft, aiScan?.forDraft]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ------------------------------------------------------------ focus
+  const [view, setView] = useState<DraftView>('write')
   const [focus, setFocus] = useState<{ start: number; end: number; nonce: number } | null>(null)
   const pointAt = (start: number, end: number) => setFocus((f) => ({ start, end, nonce: (f?.nonce ?? 0) + 1 }))
   const pointAtQuote = (q: string) => {
@@ -257,6 +258,24 @@ export default function App() {
         setDraft(before)
         setUndo(null)
         setFixesSinceRun((n) => Math.max(0, n - 1))
+      },
+    })
+  }
+
+  // "Blur all": every giveaway with a safe rewrite, in one go, with undo.
+  const blurEverything = () => {
+    const { draft: next, count } = blurAll(draft, tells)
+    if (!count) return
+    const before = draft
+    setUndo(before)
+    setDraft(next)
+    setFixesSinceRun((n) => n + count)
+    toast(`Blurred ${count} ${count === 1 ? 'giveaway' : 'giveaways'} on this device`, {
+      label: 'Undo',
+      run: () => {
+        setDraft(before)
+        setUndo(null)
+        setFixesSinceRun((n) => Math.max(0, n - count))
       },
     })
   }
@@ -468,10 +487,25 @@ export default function App() {
                 warmKey={warmKey}
                 linked={hoverFact}
                 footer={scanFooter}
+                view={view}
+                onView={setView}
+                onPickTell={(t) => {
+                  setView('write')
+                  pointAt(t.start, t.end)
+                }}
               />
             </div>
 
-            <Giveaways tells={tells} onPick={(t) => pointAt(t.start, t.end)} blurOf={(t) => blurSpan(draft, t)?.replacement ?? null} onBlur={quickBlur} />
+            <Giveaways
+              tells={tells}
+              onPick={(t) => {
+                setView('write')
+                pointAt(t.start, t.end)
+              }}
+              blurOf={(t) => blurSpan(draft, t)?.replacement ?? null}
+              onBlur={quickBlur}
+              onBlurAll={blurEverything}
+            />
 
             {fix ? (
               <div ref={fixesRef}>

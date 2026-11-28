@@ -132,3 +132,20 @@ export function replaceSpan(draft: string, start: number, end: number, replaceme
   const rep = startsSentence && /^[a-z]/.test(replacement) ? replacement[0].toUpperCase() + replacement.slice(1) : replacement
   return before + rep + after
 }
+
+/**
+ * Blurs every giveaway that has a safe automatic rewrite, in one pass. Spans
+ * are replaced from the end of the draft backwards, so earlier offsets stay
+ * valid. Giveaways with no safe rewrite are left for the AI rewrite.
+ */
+export function blurAll(draft: string, tells: Pick<Tell, 'start' | 'end' | 'text'>[]): { draft: string; count: number } {
+  let next = draft
+  let count = 0
+  for (const t of [...tells].sort((a, b) => b.start - a.start)) {
+    const b = blurSpan(next, t)
+    if (!b) continue
+    next = replaceSpan(next, b.start, b.end, b.replacement)
+    count++
+  }
+  return { draft: next, count }
+}
