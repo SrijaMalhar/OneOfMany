@@ -1,7 +1,7 @@
 // "Can the eye find you?" A playable version of the idea, right on the
 // landing page. The rules that run on this device mark every giveaway as you
-// type; each one rules out part of the flock, until the eye's beam lands on
-// Nobody. Blur a detail and the flock comes back. No AI and no network here:
+// type; each one crosses out part of the flock in red pencil, until the
+// eye's beam lands on Nobody. Blur a detail and the flock comes back. No AI and no network here:
 // the real detective is one click away.
 
 import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -188,6 +188,12 @@ export function HideGame({ onStart }: { onStart: () => void }) {
             return (
               <span key={i} className={`hg-sheep${out ? ' is-out' : ''}${you ? ' is-you' : ''}${you && flinch ? ' is-flinch' : ''}`}>
                 {you ? <Nobody look={{ x: 0.2, y: found ? 0.8 : -0.9 }} /> : <FlockSheep />}
+                {out ? (
+                  <svg className="hg-x" viewBox="0 0 40 40" aria-hidden="true">
+                    <path pathLength={1} d="M9 10C17 17 24 25 32 31" />
+                    <path pathLength={1} d="M31 9C24 17 16 24 8 32" />
+                  </svg>
+                ) : null}
               </span>
             )
           })}

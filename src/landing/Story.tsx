@@ -1,6 +1,6 @@
-// How it works, painted on the cave wall: three chalk drawings in the order
-// things happen. A displacement filter roughens every stroke so it reads as
-// drawn by hand on rock.
+// How it works, in three pencil sketches on index cards, in the order things
+// happen. A displacement filter roughens every stroke so it reads as drawn
+// by hand.
 
 import { MASK } from '../ui/sheepShape'
 
@@ -20,7 +20,7 @@ function cloud(cx: number, cy: number, rx: number, ry: number, bumps = 9) {
   return `${d}Z`
 }
 
-/** A chalk sheep, facing the viewer. `masked` draws Nobody. */
+/** A sketched sheep, facing the viewer. `masked` draws Nobody. */
 function ChalkSheep({ x, y, s = 1, masked = false }: { x: number; y: number; s?: number; masked?: boolean }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
@@ -118,7 +118,7 @@ export function Story() {
       <ol className="story-list">
         {STEPS.map((s, i) => (
           <li key={s.title} className="story-step">
-            <svg className="story-art" viewBox="0 0 320 230" role="img" aria-label={`Cave painting: ${s.title}`}>
+            <svg className="story-art" viewBox="0 0 320 230" role="img" aria-label={`Sketch: ${s.title}`}>
               <g filter="url(#chalk)">{s.art}</g>
             </svg>
             <div className="story-text">

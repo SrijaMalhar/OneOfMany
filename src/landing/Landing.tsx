@@ -71,7 +71,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
       <section className="lp-story" ref={storyRef} aria-labelledby="story-title">
         <div className="lp-wrap">
           <h2 id="story-title" className="display lp-h2">
-            How it works, as told on the cave wall
+            How it works, in three sketches
           </h2>
           <p className="lp-sub">
             Three steps. You can do the first one offline, and the detective never sees who you are.{' '}

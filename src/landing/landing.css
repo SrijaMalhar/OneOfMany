@@ -1,43 +1,64 @@
-/* The landing page. Its own palette, not the tool's: the cave at night, wool,
-   the Cyclops's gold eye and Nobody's violet mask, then daylight once the
-   flock is out. The tool keeps its calm look. */
+/* The landing page, on the same desk as the tool. The story is still the
+   Odyssey: the Cyclops's eye sweeps its light over the flock and Nobody
+   hides in the front row. Here the cave is cut from kraft paper, the eye's
+   beam is a stroke of highlighter, the sheep are inked, and the notes in
+   the margin are in red pencil. It keeps one palette whatever the tool's
+   theme is set to. */
 
 .lp {
-  --cave: #1c1633;
-  --cave-2: #241d44;
-  --cave-3: #2f2659;
-  --cave-line: #41367a;
-  --wool: #f4f0fb;
-  --wool-2: #c9c0e2;
-  --wool-3: #8f86b4;
-  --ink: #1c1633;
-  --face: #2b2448;
-  --gold: #ffc53d;
-  --gold-2: #e9a514;
-  --mask: #9b82ff;
-  --mask-2: #7a5cf0;
-  --day: #f5f2fb;
-  --day-2: #e9e4f6;
-  --day-ink-2: #4b4470;
+  --desk: #e9e3d5;
+  --paper: #fdfbf6;
+  --paper-2: #f5f0e5;
+  --cream: #fbf7ec;
+  --ink: #221e18;
+  --ink-2: #4e473c;
+  --ink-3: #776e60;
+  --rule: #c9bda5;
+  --kraft: #d8bf91;
+  --kraft-2: #c9ab76;
+  --kraft-3: #b8996a;
+  --manila: #ead6a2;
+  --gold: #f3c623;
+  --gold-2: #d9a90d;
+  --red: #cf3a2f;
+  --violet: #6249cf;
+  --hl: #fde46a;
+  --hl-orange: #ffc27d;
+  --hl-pink: #ffadb9;
+  --rule-blue: #c8d8ec;
+  --rule-red: #eaa29a;
   --display: var(--font-serif);
 
   min-height: 100dvh;
-  background: var(--cave);
-  color: var(--wool);
+  background-color: var(--desk);
+  background-image: var(--grain-light);
+  color: var(--ink);
   font-family: var(--font-sans);
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
+
+  /* The characters, in ink. */
+  --nb-wool: #fffdf8;
+  --nb-face: #2c2720;
+  --nb-pupil: #221e18;
+  --nb-mask: var(--violet);
+  --nb-line: var(--ink);
+  --cy-skin: var(--kraft);
+  --cy-under: var(--kraft-2);
+  --cy-brow: #c8aa72;
+  --cy-ink: var(--ink);
+  --grain-light: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.2 0 0 0 0 0.12 0 0 0 0.7 -0.3'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
 }
 
 .lp ::selection {
-  background: var(--gold);
+  background: var(--hl);
   color: var(--ink);
 }
 
 .display {
   font-family: var(--display);
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -47,7 +68,8 @@
   top: -60px;
   z-index: 50;
   padding: 8px 12px;
-  border-radius: 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
   background: var(--gold);
   color: var(--ink);
   font-weight: 600;
@@ -58,7 +80,7 @@
 }
 
 .lp :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid #2a56c1;
   outline-offset: 3px;
 }
 
@@ -70,75 +92,66 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 52px;
+  height: 54px;
   padding: 0 26px;
-  border: 2px solid transparent;
-  border-radius: 999px;
+  border: 2px solid var(--ink);
+  border-radius: 5px;
   font: inherit;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 16.5px;
+  font-weight: 650;
   cursor: pointer;
   text-decoration: none;
+  box-shadow: 4px 4px 0 var(--ink);
   transition:
-    transform 160ms var(--ease),
-    background-color 160ms var(--ease),
-    box-shadow 160ms var(--ease);
+    translate 90ms var(--ease),
+    box-shadow 90ms var(--ease),
+    background-color 160ms var(--ease);
+}
+
+.lp-btn:hover {
+  translate: -1px -1px;
+  box-shadow: 5px 5px 0 var(--ink);
 }
 
 .lp-btn:active {
-  transform: translateY(1px);
+  translate: 4px 4px;
+  box-shadow: 0 0 0 var(--ink);
 }
 
 .lp-btn-gold {
   background: var(--gold);
   color: var(--ink);
-  box-shadow: 0 4px 0 var(--gold-2);
 }
 
 .lp-btn-gold:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 0 var(--gold-2);
-}
-
-.lp-btn-gold:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--gold-2);
+  background: #f7d24a;
 }
 
 .lp-btn-line {
-  border-color: color-mix(in oklab, var(--wool) 40%, transparent);
-  background: transparent;
-  color: var(--wool);
-}
-
-.lp-btn-line:hover {
-  border-color: var(--wool);
-  background: color-mix(in oklab, var(--wool) 8%, transparent);
-}
-
-.lp-btn-wool {
-  background: var(--wool);
+  background: var(--paper);
   color: var(--ink);
 }
 
-.lp-btn-wool:hover {
-  background: #fff;
+.lp-btn-wool {
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .lp-btn-ink {
   background: var(--ink);
-  color: var(--wool);
-  box-shadow: 0 4px 0 #000;
+  color: var(--paper);
+  box-shadow: 4px 4px 0 var(--gold-2);
 }
 
 .lp-btn-ink:hover {
-  transform: translateY(-1px);
+  box-shadow: 5px 5px 0 var(--gold-2);
 }
 
 .lp-btn-sm {
-  height: 38px;
+  height: 40px;
   padding: 0 16px;
   font-size: 14px;
+  box-shadow: 3px 3px 0 var(--ink);
 }
 
 /* ------------------------------------------------------------ nav */
@@ -151,22 +164,29 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 32px;
+  height: 72px;
+  padding: 0 32px;
+  border-bottom: 2px solid var(--ink);
+  background-color: var(--desk);
+  background-image: var(--grain-light);
 }
 
 .lp-brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: var(--wool);
+  color: var(--ink);
   text-decoration: none;
-  font-family: var(--display);
-  font-size: 22px;
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .lp-brand-mark {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   margin: -6px 0;
 }
 
@@ -183,24 +203,27 @@
   height: 38px;
   padding: 0 12px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 4px;
   background: none;
-  color: var(--wool-2);
+  color: var(--ink-2);
   font: inherit;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 14.5px;
+  font-weight: 550;
   text-decoration: none;
   cursor: pointer;
 }
 
 .lp-links > button:not(.lp-btn):hover,
 .lp-links > a:not(.lp-btn):hover {
-  color: var(--wool);
-  background: color-mix(in oklab, var(--wool) 8%, transparent);
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
 }
 
 .lp-links .lp-btn {
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 .lp-icon .icon {
@@ -212,25 +235,10 @@
   display: block;
   width: 100%;
   height: auto;
-  --sheep-wool: var(--wool);
-  --sheep-face: var(--face);
-  --sheep-eye: var(--wool);
-}
-
-/* The characters take the landing page's colours, read where they stand,
-   so a lit sheep's wool changes with it. */
-.lp .nobody {
-  --nb-wool: var(--wool);
-  --nb-face: var(--face);
-  --nb-pupil: var(--ink);
-  --nb-mask: var(--mask);
-}
-
-.lp .cyclops {
-  --cy-skin: var(--cave-3);
-  --cy-under: var(--cave-2);
-  --cy-brow: var(--cave-line);
-  --cy-ink: #151029;
+  --sheep-wool: var(--wool, #fffdf8);
+  --sheep-face: var(--face, #2c2720);
+  --sheep-eye: var(--wool, #fffdf8);
+  --sheep-line: var(--line-ink, #221e18);
 }
 
 /* ------------------------------------------------------------ hero */
@@ -246,34 +254,42 @@
   height: max(720px, 100dvh);
   max-height: 1000px;
   overflow: hidden;
-  background:
-    radial-gradient(60% 50% at 76% 30%, color-mix(in oklab, var(--cave-3) 70%, transparent), transparent 70%),
-    var(--cave);
   isolation: isolate;
 }
 
+/* The roof of the cave, in two layers of cut kraft paper. */
 .hero-rock {
   position: absolute;
-  inset: 0 0 auto;
+  inset: 70px 0 auto;
   width: 100%;
-  height: 220px;
+  height: 170px;
   z-index: 0;
+  overflow: visible;
+}
+
+.hero-rock path {
+  stroke: var(--ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 
 .rock-back {
-  fill: var(--cave-2);
+  fill: var(--kraft);
+  filter: drop-shadow(0 4px 0 rgb(34 30 24 / 0.16));
 }
 
 .rock-front {
-  fill: #151029;
+  fill: var(--kraft-2);
+  filter: drop-shadow(0 4px 0 rgb(34 30 24 / 0.2));
 }
 
 .hero-eye {
   position: absolute;
   right: 6%;
-  top: 15%;
+  top: 19%;
   z-index: 2;
   width: clamp(240px, 30vw, 440px);
+  filter: drop-shadow(5px 5px 0 rgb(34 30 24 / 0.2));
 }
 
 .hero-eye .cyclops {
@@ -282,6 +298,7 @@
   height: auto;
 }
 
+/* The eye's light is a broad stroke of highlighter. */
 .hero-beam {
   position: absolute;
   left: var(--ex, 75%);
@@ -292,46 +309,75 @@
   transform-origin: 50% 0;
   rotate: var(--angle, 20deg);
   z-index: 3;
-  background: linear-gradient(
-    to bottom,
-    rgb(255 214 110 / 0),
-    rgb(255 214 110 / 0.3) 6%,
-    rgb(255 214 110 / 0.14) 55%,
-    rgb(255 214 110 / 0) 88%
-  );
+  background: linear-gradient(to bottom, rgb(253 228 106 / 0), rgb(253 228 106 / 0.8) 6%, rgb(253 228 106 / 0.55) 55%, rgb(253 228 106 / 0) 88%);
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
-  mix-blend-mode: plus-lighter;
+  mix-blend-mode: multiply;
   pointer-events: none;
 }
 
 .hero-copy {
   position: relative;
   z-index: 5;
-  max-width: 820px;
-  padding: clamp(116px, 16vh, 160px) 32px 0 clamp(32px, 6vw, 96px);
+  max-width: 860px;
+  padding: clamp(160px, 21vh, 200px) 32px 0 clamp(32px, 6vw, 96px);
 }
 
 .hero-title {
   margin: 0;
-  font-size: clamp(48px, 6vw, 92px);
-  line-height: 0.98;
-  color: var(--wool);
+  font-size: clamp(50px, 6.4vw, 100px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  font-variation-settings: 'opsz' 72;
+}
+
+/* A red-pencil ring around the question. */
+.circled {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.circled svg {
+  position: absolute;
+  inset: -18% -9% -16% -7%;
+  width: 116%;
+  height: 134%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.circled path {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 900ms 500ms var(--ease) forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .hero-lede {
-  max-width: 30em;
-  margin: 24px 0 0;
-  font-size: 18px;
-  line-height: 28px;
-  color: var(--wool-2);
+  max-width: 31em;
+  margin: 26px 0 0;
+  font-size: 19px;
+  line-height: 29px;
+  color: var(--ink-2);
   text-wrap: pretty;
 }
 
 .hero-cta {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 14px;
+  margin-top: 34px;
 }
 
 .hero-flock {
@@ -347,10 +393,14 @@
   inset: auto 0 -10px;
   width: 100%;
   height: 60%;
+  overflow: visible;
 }
 
 .hero-ground path {
-  fill: #140f27;
+  fill: var(--kraft);
+  stroke: var(--ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 
 .hero-sheep {
@@ -362,26 +412,21 @@
 }
 
 .hero-sheep.row-0 {
-  --wool: #6f6699;
-  --face: #241d44;
+  --wool: #e6dfcd;
+  --face: #6e6556;
+  --line-ink: #8d846f;
 }
 
 .hero-sheep.row-1 {
-  --wool: #aaa1cc;
-  --face: #2a2350;
+  --wool: #f2ecdf;
+  --face: #48413a;
+  --line-ink: #4e473c;
 }
 
+/* A sheep in the beam is highlighted, the way you'd mark a word. */
 .hero-sheep.is-lit {
-  --wool: #fff3cf;
-  filter: drop-shadow(0 0 18px color-mix(in oklab, var(--gold) 45%, transparent));
-}
-
-.hero-sheep.row-0.is-lit {
-  --wool: #c9b98c;
-}
-
-.hero-sheep.row-1.is-lit {
-  --wool: #e6d6a6;
+  --wool: var(--hl);
+  --nb-wool: var(--hl);
 }
 
 .hero-you {
@@ -391,9 +436,9 @@
 .hero-note {
   position: absolute;
   z-index: 3;
-  width: calc(var(--sheep) * 1.5);
+  width: calc(var(--sheep) * 1.6);
   translate: -18% 0;
-  color: var(--gold);
+  color: var(--red);
 }
 
 .hero-note svg {
@@ -404,8 +449,9 @@
 }
 
 .hero-note text {
-  font-family: var(--display);
-  font-size: 22px;
+  font-family: var(--font-hand);
+  font-size: 24px;
+  font-weight: 700;
   fill: currentColor;
 }
 
@@ -431,7 +477,13 @@
 
 @media (max-width: 900px) {
   .lp-nav {
-    padding: 14px 16px;
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .hero-rock {
+    top: 62px;
+    height: 110px;
   }
 
   .lp-links > button:not(.lp-btn),
@@ -449,27 +501,27 @@
   }
 
   .lp-brand {
-    font-size: 19px;
+    font-size: 21px;
   }
 
   .hero-eye {
     right: 50%;
     translate: 50% 0;
-    top: 84px;
+    top: 116px;
     width: min(62vw, 300px);
   }
 
   .hero-copy {
-    padding: calc(84px + min(62vw, 300px) * 0.62 + 16px) 20px 0;
+    padding: calc(116px + min(62vw, 300px) * 0.62 + 16px) 20px 0;
   }
 
   .hero-title {
-    font-size: clamp(40px, 10.5vw, 64px);
+    font-size: clamp(42px, 11vw, 66px);
   }
 
   .hero-lede {
-    font-size: 16px;
-    line-height: 25px;
+    font-size: 16.5px;
+    line-height: 26px;
   }
 }
 
@@ -485,16 +537,16 @@
 .lp-h2 {
   max-width: 14em;
   margin: 0;
-  font-size: clamp(38px, 4.6vw, 64px);
+  font-size: clamp(40px, 4.8vw, 68px);
   line-height: 1;
 }
 
 .lp-sub {
   max-width: 40em;
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   font-size: 18px;
   line-height: 28px;
-  color: var(--wool-2);
+  color: var(--ink-2);
   text-wrap: pretty;
 }
 
@@ -503,73 +555,84 @@
 .lp-play {
   position: relative;
   padding: 120px 0 140px;
-  background: var(--cave);
+  border-top: 2px solid var(--ink);
+  background-color: var(--paper-2);
+  background-image:
+    linear-gradient(var(--rule-blue) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule-blue) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 .hg {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
-  gap: 28px;
+  gap: 32px;
   margin-top: 48px;
   align-items: start;
 }
 
 .hg-card {
-  border-radius: 28px;
-  background: var(--day);
+  border: 2px solid var(--ink);
+  border-radius: 5px;
+  background: var(--paper);
   color: var(--ink);
   padding: 22px;
-  box-shadow: 0 6px 0 #0f0b20;
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 .hg-samples {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .hg-samples button {
-  height: 34px;
-  padding: 0 14px;
-  border: 1.5px solid var(--day-2);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--day-ink-2);
-  font: inherit;
+  height: 32px;
+  padding: 0 12px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
   font-size: 13px;
-  font-weight: 500;
   cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 .hg-samples button:hover {
-  border-color: var(--wool-3);
-  color: var(--ink);
+  background: var(--paper-2);
 }
 
 .hg-samples button.is-on {
-  border-color: var(--ink);
   background: var(--ink);
-  color: var(--wool);
+  color: var(--paper);
+  translate: 2px 2px;
+  box-shadow: none;
 }
 
+/* A page of the notebook: ruled lines and a red margin. */
 .hg-editor {
   position: relative;
-  border-radius: 18px;
-  background: #fff;
-  border: 1.5px solid var(--day-2);
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background:
+    linear-gradient(to right, transparent 38px, var(--rule-red) 38px, var(--rule-red) 39.5px, transparent 39.5px),
+    linear-gradient(to bottom, transparent 27px, var(--rule-blue) 27px) 0 18px / 100% 28px repeat-y,
+    #fffdf8;
 }
 
 .hg-editor:focus-within {
-  border-color: var(--mask-2);
+  border-color: #2a56c1;
+  box-shadow: 3px 3px 0 #2a56c1;
 }
 
 .hg-back,
 .hg-input {
   margin: 0;
-  padding: 18px 20px;
-  font: inherit;
-  font-size: 16px;
+  padding: 18px 20px 18px 52px;
+  font-family: var(--font-serif);
+  font-size: 17.5px;
   line-height: 28px;
   letter-spacing: 0;
   white-space: pre-wrap;
@@ -586,65 +649,71 @@
 
 .hg-back mark {
   color: transparent;
-  border-radius: 4px;
+  background-color: transparent;
+  background-image: linear-gradient(97deg, transparent 1px, var(--m) 4px, var(--m) calc(100% - 3px), transparent calc(100% - 1px));
+  background-size: 100% 78%;
+  background-position: 0 70%;
+  background-repeat: no-repeat;
+  border-radius: 2px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
 
 .hg-back mark.risk-high {
-  background: #ffd3cf;
-  box-shadow: inset 0 -2.5px 0 #e5484d;
+  --m: var(--hl-pink);
+  text-decoration: underline wavy var(--red) 1.5px;
+  text-underline-offset: 5px;
 }
 
 .hg-back mark.risk-medium {
-  background: #ffe7b8;
-  box-shadow: inset 0 -2.5px 0 #f0a020;
+  --m: var(--hl-orange);
 }
 
 .hg-back mark.risk-low {
-  background: #ece8f6;
-  box-shadow: inset 0 -2.5px 0 #a79fc6;
+  --m: var(--hl);
 }
 
 .hg-input {
   position: relative;
   display: block;
   width: 100%;
-  min-height: 180px;
+  min-height: 196px;
   border: 0;
   background: transparent;
   color: var(--ink);
-  caret-color: var(--mask-2);
+  caret-color: #2a56c1;
   resize: none;
   overflow: hidden;
   outline: none;
 }
 
 .hg-input::placeholder {
-  color: #8d86ad;
+  color: #a99f8e;
+  font-style: italic;
 }
 
 .hg-tells {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .hg-tells-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .hg-link {
   padding: 4px 0;
   border: 0;
   background: none;
-  color: var(--mask-2);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
+  color: #2a56c1;
+  font-family: var(--font-hand);
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -655,43 +724,50 @@
 .hg-tells ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* Each giveaway is a paper tag. */
 .hg-tells li {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   max-width: 100%;
-  padding: 4px 4px 4px 12px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1.5px solid var(--day-2);
-  font-size: 13px;
+  padding: 3px 3px 3px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--paper);
+  font-size: 13.5px;
   animation: hg-pop 220ms var(--ease) both;
 }
 
 .hg-tells li.risk-high {
-  border-color: #f3aea9;
+  background: #ffe3e6;
 }
 
 .hg-tells li.risk-medium {
-  border-color: #f5cf86;
+  background: #fff0dc;
 }
 
 .hg-quote {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-style: italic;
 }
 
 .hg-kind {
   flex: none;
-  color: #6f6893;
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .hg-tells li button {
@@ -699,17 +775,17 @@
   height: 26px;
   padding: 0 10px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 2px;
   background: var(--ink);
-  color: var(--wool);
+  color: var(--paper);
   font: inherit;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 650;
   cursor: pointer;
 }
 
 .hg-tells li button:hover {
-  background: var(--mask-2);
+  background: var(--red);
 }
 
 @keyframes hg-pop {
@@ -722,10 +798,10 @@
 .hg-send {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 20px;
-  padding-top: 18px;
-  border-top: 1.5px dashed var(--day-2);
+  gap: 18px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1.5px dashed var(--rule);
 }
 
 .hg-send .lp-btn {
@@ -739,19 +815,34 @@
 
 .hg-send p {
   margin: 0;
-  font-size: 13px;
-  line-height: 19px;
-  color: #6f6893;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ink-3);
 }
 
+/* The suspect pool: a manila card with the eye above the flock. */
 .hg-pen {
   position: sticky;
   top: 24px;
   overflow: hidden;
-  border-radius: 28px;
-  background: var(--cave-2);
-  box-shadow: inset 0 0 0 2px var(--cave-line);
-  padding: 12px 22px 22px;
+  border: 2px solid var(--ink);
+  border-radius: 5px;
+  background-color: var(--manila);
+  background-image: var(--grain-light);
+  box-shadow: 6px 6px 0 var(--ink);
+  padding: 14px 22px 22px;
+}
+
+.hg-pen::before {
+  content: 'SUSPECT POOL';
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #6b5726;
 }
 
 .hg-eye {
@@ -784,11 +875,12 @@
   position: absolute;
   left: 22px;
   right: 22px;
-  top: 76px;
+  top: 78px;
   height: 330px;
   z-index: 1;
-  background: linear-gradient(to bottom, rgb(255 214 110 / 0.32), rgb(255 214 110 / 0.1));
+  background: linear-gradient(to bottom, rgb(253 228 106 / 0.95), rgb(253 228 106 / 0.5));
   clip-path: polygon(50% 0, calc(var(--c) + var(--w) / 2) 100%, calc(var(--c) - var(--w) / 2) 100%);
+  mix-blend-mode: multiply;
   transition: clip-path 500ms var(--ease);
   pointer-events: none;
 }
@@ -804,13 +896,12 @@
 }
 
 .hg-sheep {
+  position: relative;
   display: block;
   aspect-ratio: 1;
   transition:
     opacity 420ms var(--ease),
-    translate 420ms var(--ease),
     scale 420ms var(--ease);
-  --wool: #e9e4f6;
 }
 
 .hg-sheep .nobody,
@@ -821,14 +912,35 @@
   overflow: visible;
 }
 
-.hg-sheep.is-out {
-  opacity: 0.1;
-  translate: 0 6px;
-  scale: 0.86;
+.hg-sheep.is-out .flock-sheep {
+  opacity: 0.35;
+}
+
+/* Ruled out: crossed through in red pencil. */
+.hg-x {
+  position: absolute;
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.hg-x path {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 260ms var(--ease) forwards;
+}
+
+.hg-x path + path {
+  animation-delay: 140ms;
 }
 
 .hg-sheep.is-you {
-  position: relative;
   z-index: 1;
   transition: scale 260ms var(--ease);
 }
@@ -839,11 +951,7 @@
 
 .hg-pen.is-found .hg-sheep.is-you {
   scale: 1.35;
-  filter: drop-shadow(0 0 14px rgb(255 214 110 / 0.7));
-}
-
-.hg-pen.is-found .hg-sheep.is-you .nb-wool {
-  fill: #fff3cf;
+  --nb-wool: var(--hl);
 }
 
 .hg-verdict {
@@ -853,42 +961,47 @@
   align-items: center;
   gap: 18px;
   margin-top: 18px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  background: var(--cave);
+  padding: 14px 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--paper);
 }
 
 .hg-count {
   flex: none;
   margin: 0;
-  font-size: 52px;
+  font-size: 56px;
   line-height: 1;
-  color: var(--gold);
-  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .hg-count span {
-  margin-left: 6px;
-  font-size: 18px;
-  color: var(--wool-3);
+  margin-left: 4px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-3);
 }
 
 .is-found .hg-count {
-  color: #ff8d7a;
+  color: var(--red);
 }
 
 .hg-head {
   margin: 0;
-  font-size: 18px;
-  font-weight: 650;
-  color: var(--wool);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .hg-body {
   margin: 2px 0 0;
   font-size: 14px;
   line-height: 20px;
-  color: var(--wool-2);
+  color: var(--ink-2);
 }
 
 @media (max-width: 900px) {
@@ -916,22 +1029,21 @@
   }
 }
 
-/* ------------------------------------------------------------ cave paintings */
+/* ------------------------------------------------------------ three sketches */
 
 .lp-story {
   position: relative;
-  padding: 40px 0 140px;
-  background:
-    radial-gradient(40% 30% at 20% 30%, rgb(255 255 255 / 0.025), transparent 70%),
-    radial-gradient(30% 40% at 80% 70%, rgb(0 0 0 / 0.18), transparent 70%),
-    var(--cave);
+  padding: 110px 0 150px;
+  border-top: 2px solid var(--ink);
+  background-color: var(--desk);
+  background-image: var(--grain-light);
 }
 
 .lp-inline {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--gold);
+  color: #2a56c1;
   font: inherit;
   font-weight: 600;
   text-decoration: underline;
@@ -942,7 +1054,7 @@
 .story-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: 32px;
   margin: 56px 0 0;
   padding: 0;
   list-style: none;
@@ -951,70 +1063,86 @@
 .story-step {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
 }
 
+/* Each sketch is on an index card: a red line at the top, blue below. */
 .story-art {
   display: block;
   width: 100%;
   height: auto;
   padding: 18px;
-  border-radius: 40px 28px 44px 24px / 28px 40px 24px 44px;
-  background: var(--cave-2);
-  box-shadow: inset 0 -10px 30px rgb(0 0 0 / 0.25);
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background:
+    linear-gradient(to bottom, transparent 34px, var(--rule-red) 34px, var(--rule-red) 36px, transparent 36px),
+    linear-gradient(to bottom, transparent 23px, var(--rule-blue) 23px) 0 36px / 100% 24px repeat-y,
+    #fffdf8;
+  box-shadow: 5px 5px 0 var(--ink);
+  rotate: -1.2deg;
+}
+
+.story-step:nth-child(2) .story-art {
+  rotate: 0.8deg;
+}
+
+.story-step:nth-child(3) .story-art {
+  rotate: -0.4deg;
 }
 
 .story-art .ch-line {
   fill: none;
-  stroke: #efe6d6;
-  stroke-width: 3.2;
+  stroke: var(--ink);
+  stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .story-art .ch-thin {
-  stroke-width: 2.2;
+  stroke-width: 2;
   opacity: 0.8;
 }
 
 .story-art .ch-dash {
   stroke-dasharray: 2 9;
   stroke-width: 3;
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
 .story-art .ch-wool {
-  fill: rgb(239 230 214 / 0.08);
+  fill: #fffdf8;
 }
 
 .story-art .ch-face {
-  fill: rgb(239 230 214 / 0.16);
+  fill: #2c2720;
 }
 
 .story-art .ch-solid {
-  fill: rgb(239 230 214 / 0.14);
+  fill: var(--hl);
 }
 
 .story-art .ch-mask {
-  fill: var(--mask);
+  fill: var(--violet);
 }
 
 .story-art .ch-dot {
-  stroke: #efe6d6;
+  stroke: #fffdf8;
   stroke-width: 3.4;
   stroke-linecap: round;
 }
 
 .story-art .ch-iris {
   fill: var(--gold);
+  stroke: var(--ink);
+  stroke-width: 2;
 }
 
 .story-art .ch-pupil {
-  fill: var(--cave);
+  fill: var(--ink);
 }
 
 .story-art .ch-sun {
-  stroke: var(--gold);
+  stroke: var(--gold-2);
 }
 
 .story-text {
@@ -1026,26 +1154,28 @@
 
 .story-n {
   grid-row: span 2;
-  font-size: 44px;
+  font-family: var(--font-hand);
+  font-size: 52px;
+  font-weight: 700;
   line-height: 0.9;
-  color: var(--gold);
+  color: var(--red);
 }
 
 .story-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1.1;
 }
 
 .story-text p {
   grid-column: 2;
   margin: 8px 0 0;
-  font-size: 15px;
+  font-size: 15.5px;
   line-height: 24px;
-  color: var(--wool-2);
+  color: var(--ink-2);
 }
 
-/* ------------------------------------------------------------ daylight */
+/* ------------------------------------------------------------ out in the open */
 
 .mouth {
   position: relative;
@@ -1058,16 +1188,20 @@
   inset: 0 0 auto;
   width: 100%;
   height: clamp(80px, 12vw, 200px);
+  overflow: visible;
 }
 
 .mouth path {
-  fill: var(--cave);
+  fill: var(--desk);
+  stroke: var(--ink);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 
 .day {
   position: relative;
   padding: clamp(140px, 16vw, 260px) 0 0;
-  background: linear-gradient(to bottom, #fff4d6, var(--day) 420px);
+  background: linear-gradient(to bottom, #fff2c4, var(--cream) 420px);
   color: var(--ink);
 }
 
@@ -1076,37 +1210,41 @@
 }
 
 .day-sub {
-  color: var(--day-ink-2);
+  color: var(--ink-2);
 }
 
 .split {
   display: grid;
   grid-template-columns: 1fr 1fr 0.9fr;
-  gap: 20px;
+  gap: 24px;
   margin-top: 48px;
   align-items: start;
 }
 
 .split-col {
   padding: 26px;
-  border-radius: 28px;
-  background: #fff;
+  border-radius: 5px;
+  background: var(--paper);
   border: 2px solid var(--ink);
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.split-cloud {
+  background: var(--manila);
 }
 
 .split-col h3 {
   margin: 14px 0 12px;
-  font-size: 26px;
+  font-size: 28px;
   line-height: 1.05;
 }
 
 .split-col ul {
   margin: 0;
   padding: 0 0 0 18px;
-  font-size: 15px;
+  font-size: 15.5px;
   line-height: 24px;
-  color: var(--day-ink-2);
+  color: var(--ink-2);
 }
 
 .split-col li + li {
@@ -1118,7 +1256,8 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
 }
 
 .split-icon .icon {
@@ -1127,27 +1266,26 @@
 }
 
 .split-device .split-icon {
-  background: #ece6ff;
-  color: var(--mask-2);
+  background: #ece7fb;
+  color: var(--violet);
 }
 
 .split-cloud .split-icon {
-  background: #fff1c9;
-  color: #a36d00;
+  background: var(--gold);
+  color: var(--ink);
 }
 
 .receipt {
   position: relative;
   margin: 0;
   padding: 22px 22px 30px;
-  background: #fffdf8;
+  background: #fffef9;
   color: var(--ink);
   font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 13.5px;
+  line-height: 21px;
   rotate: 1.5deg;
-  filter: drop-shadow(0 5px 0 rgb(28 22 51 / 0.14));
-  --zig: radial-gradient(circle at 8px 0, transparent 7px, #fffdf8 7.5px);
+  filter: drop-shadow(4px 5px 0 rgb(34 30 24 / 0.22));
   -webkit-mask:
     linear-gradient(#000, #000) top / 100% calc(100% - 8px) no-repeat,
     radial-gradient(circle at 8px 100%, transparent 6px, #000 6.5px) bottom / 16px 9px repeat-x;
@@ -1159,8 +1297,8 @@
 .receipt-head {
   margin: 0 0 12px;
   padding-bottom: 10px;
-  border-bottom: 1.5px dashed #c9c2dc;
-  font-weight: 600;
+  border-bottom: 1.5px dashed var(--rule);
+  font-weight: 700;
 }
 
 .receipt dl {
@@ -1172,15 +1310,11 @@
   gap: 8px;
 }
 
-.receipt dt::after {
-  content: '';
-}
-
 .receipt dl div::after {
   order: 1;
   flex: 1;
   margin-bottom: 5px;
-  border-bottom: 1.5px dotted #c9c2dc;
+  border-bottom: 1.5px dotted var(--rule);
   content: '';
 }
 
@@ -1194,19 +1328,19 @@
   justify-content: space-between;
   margin: 12px 0 0;
   padding-top: 10px;
-  border-top: 1.5px dashed #c9c2dc;
+  border-top: 1.5px dashed var(--rule);
   font-weight: 700;
 }
 
 .receipt-total b {
-  color: #18794e;
+  color: #286a3f;
 }
 
 .receipt figcaption {
   margin-top: 14px;
-  font-family: var(--font-sans);
-  font-size: 12px;
-  color: #6f6893;
+  font-family: var(--font-hand);
+  font-size: 15px;
+  color: var(--red);
 }
 
 .kit-h2 {
@@ -1229,30 +1363,34 @@
 
 .kit h3 {
   margin: 0 0 6px;
-  font-size: 17px;
-  font-weight: 650;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .kit p {
   margin: 0;
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 22px;
-  color: var(--day-ink-2);
+  color: var(--ink-2);
 }
 
+/* A hill of cut green paper. */
 .finale {
   position: relative;
   margin-top: 140px;
   padding: 0 0 72px;
-  background: linear-gradient(to bottom, transparent 259px, #b4dea0 259px);
+  background: linear-gradient(to bottom, transparent 259px, #b5d99a 259px);
 }
 
 .finale-hill {
   position: absolute;
   inset: 40px -10% auto;
   height: 220px;
-  background: #b4dea0;
+  background: #b5d99a;
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: inset 0 2px 0 var(--ink);
 }
 
 .finale-sheep {
@@ -1260,8 +1398,7 @@
   bottom: calc(220px - var(--y) - clamp(48px, 6vw, 84px) * 0.15);
   width: clamp(48px, 6vw, 84px);
   translate: -50% 0;
-  --wool: #fff;
-  --face: var(--face);
+  --wool: #fffdf8;
 }
 
 .finale-inner {
@@ -1269,20 +1406,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 22px;
   text-align: center;
 }
 
 .lp .finale-nobody {
   width: clamp(150px, 16vw, 220px);
   height: auto;
-  --nb-wool: #fff;
 }
 
 .finale-title {
   max-width: 12em;
   margin: 0;
-  font-size: clamp(36px, 4.4vw, 60px);
+  font-size: clamp(38px, 4.6vw, 64px);
   line-height: 1;
   color: var(--ink);
 }
@@ -1294,9 +1430,10 @@
   align-items: center;
   gap: 16px 32px;
   padding: 28px 32px 36px;
-  background: #b4dea0;
-  color: #2c4a22;
-  font-size: 13px;
+  border-top: 2px solid var(--ink);
+  background: #9fcb83;
+  color: #1f3a17;
+  font-size: 13.5px;
   line-height: 20px;
 }
 
@@ -1312,8 +1449,8 @@
 }
 
 .lp-foot a {
-  color: #1f3a17;
-  font-weight: 600;
+  color: #142810;
+  font-weight: 650;
 }
 
 @media (max-width: 1040px) {
@@ -1334,7 +1471,7 @@
 @media (max-width: 900px) {
   .story-list {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 44px;
   }
 
   .split {
@@ -1351,5 +1488,13 @@
 
   .lp-foot {
     padding: 24px 16px 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circled path,
+  .hg-x path {
+    stroke-dashoffset: 0;
+    animation: none;
   }
 }

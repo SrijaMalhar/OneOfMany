@@ -1,5 +1,5 @@
-// The opening scene: the Cyclops's eye in the cave wall sweeps its beam over
-// the flock, and follows your cursor. Nobody, in the front row, watches it and
+// The opening scene: the Cyclops's eye in a cave cut from kraft paper sweeps
+// its highlighter beam over the flock, and follows your cursor. Nobody, in the front row, watches it and
 // ducks when the light passes over. Everything per-frame is written to CSS
 // variables and classes directly, so React renders the scene once.
 
@@ -162,7 +162,13 @@ export function Hero({ onStart, onPlay }: { onStart: () => void; onPlay: () => v
 
         <div className="hero-copy">
           <h1 id="hero-title" className="display hero-title">
-            Your account is anonymous. Is your post?
+            Your account is anonymous. Is your{' '}
+            <span className="circled">
+              post?
+              <svg viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true">
+                <path pathLength={1} d="M34 16C86 0 172 4 190 40C202 72 146 96 92 93C38 90 4 72 10 46C15 26 48 12 104 9" />
+              </svg>
+            </span>
           </h1>
           <p className="hero-lede">
             Every detail you share rules someone out. OneOfMany sends an AI detective after your draft before anyone else
