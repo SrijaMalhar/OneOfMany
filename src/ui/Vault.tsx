@@ -24,7 +24,7 @@ export function Vault({ vault, onChange, device, progress, canDownload, onDownlo
   const set = (a: Attribute, v: string) => onChange({ ...vault, [a]: v })
 
   return (
-    <section className="panel" aria-labelledby="vault-title">
+    <section className="panel vault" aria-labelledby="vault-title">
       <header className="vault-head">
         <div>
           <h2 id="vault-title" className="section-title">
@@ -37,6 +37,9 @@ export function Vault({ vault, onChange, device, progress, canDownload, onDownlo
             </span>{' '}
             filled.
           </p>
+          <span className="vault-stamp" aria-hidden="true">
+            Confidential · never leaves this device
+          </span>
         </div>
         <button type="button" className="btn btn-sm" onClick={() => setShow((v) => !v)} aria-pressed={show}>
           {show ? <EyeOffIcon /> : <EyeIcon />}

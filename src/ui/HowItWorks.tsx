@@ -78,7 +78,7 @@ export function HowItWorks({ open, onClose }: { open: boolean; onClose: () => vo
           </div>
           <div className="lane-wall">
             <ShieldIcon />
-            <span>Profile firewall</span>
+            <span>Firewall</span>
           </div>
           <div className="lane lane-cloud">
             <h3>

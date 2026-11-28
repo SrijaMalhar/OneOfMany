@@ -31,14 +31,18 @@ export function Giveaways({ tells, onPick, blurOf, onBlur }: Props) {
         <span className="small muted hide-sm">Select one to find it in your draft</span>
       </div>
       <ul className="list">
-        {shown.map((t) => {
+        {shown.map((t, i) => {
           const to = blurOf(t)
           return (
             <li key={`${t.start}-${t.end}`} className="gv-row">
               <button type="button" className="gv-main" onClick={() => onPick(t)}>
-                <span className={`swatch swatch-${t.heat}`} aria-hidden="true" />
+                <span className="gv-n" aria-hidden="true">
+                  E{String(i + 1).padStart(2, '0')}
+                </span>
                 <span className="gv-text">
-                  <span className="gv-quote">“{t.text}”</span>
+                  <span className="gv-quote">
+                    “<span className={`heat heat-${t.heat}`}>{t.text}</span>”
+                  </span>
                   <span className="gv-why">{t.why}</span>
                 </span>
               </button>

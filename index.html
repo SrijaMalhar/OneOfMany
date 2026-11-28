@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f8f8f9" />
+    <meta name="theme-color" content="#fdfbf6" />
     <meta name="color-scheme" content="light dark" />
     <meta
       name="description"
@@ -17,7 +17,7 @@
         var t = localStorage.getItem('oneofmany.theme.v1')
         if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         document.documentElement.dataset.theme = t
-        if (t === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f0f11')
+        if (t === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#23201b')
       } catch (e) {}
     </script>
   </head>

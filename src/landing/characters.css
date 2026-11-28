@@ -6,6 +6,14 @@
   fill: var(--nb-wool, var(--wool, #f4f0fb));
 }
 
+/* An ink outline around the outside of the silhouette, for paper. */
+.nobody .nb-outline {
+  fill: var(--nb-line, transparent);
+  stroke: var(--nb-line, transparent);
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+}
+
 .nobody .nb-face,
 .nobody .nb-legs,
 .nobody .nb-hoof {

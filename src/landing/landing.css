@@ -19,7 +19,7 @@
   --day: #f5f2fb;
   --day-2: #e9e4f6;
   --day-ink-2: #4b4470;
-  --display: 'Bagel Fat One', 'Geist Variable', system-ui, sans-serif;
+  --display: var(--font-serif);
 
   min-height: 100dvh;
   background: var(--cave);

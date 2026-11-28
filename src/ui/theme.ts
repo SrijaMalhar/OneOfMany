@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 export type Theme = 'light' | 'dark'
 
 const KEY = 'oneofmany.theme.v1'
-const META = { light: '#f8f8f9', dark: '#0f0f11' }
+const META = { light: '#fdfbf6', dark: '#23201b' }
 
 function stored(): Theme | null {
   try {

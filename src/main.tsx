@@ -1,6 +1,10 @@
-import '@fontsource-variable/geist/wght.css'
-import '@fontsource-variable/geist-mono/wght.css'
-import '@fontsource/bagel-fat-one/400.css'
+import '@fontsource-variable/archivo/wdth.css'
+import '@fontsource-variable/newsreader/opsz.css'
+import '@fontsource-variable/newsreader/opsz-italic.css'
+import '@fontsource/courier-prime/latin-400.css'
+import '@fontsource/courier-prime/latin-700.css'
+import '@fontsource/kalam/latin-400.css'
+import '@fontsource/kalam/latin-700.css'
 import './styles.css'
 
 import { StrictMode } from 'react'

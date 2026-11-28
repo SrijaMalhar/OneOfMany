@@ -10,6 +10,8 @@ const WOOL_FILL = { fill: 'var(--sheep-wool)' }
 const FACE_FILL = { fill: 'var(--sheep-face)' }
 const EYE_FILL = { fill: 'var(--sheep-eye)' }
 const MASK_FILL = { fill: 'var(--sheep-mask)' }
+// An ink outline around the silhouette, drawn first; transparent by default.
+const LINE = { fill: 'var(--sheep-line, transparent)', stroke: 'var(--sheep-line, transparent)', strokeWidth: 3.2, strokeLinejoin: 'round' as const }
 
 /** Put once on the page; every <Sheep /> refers to it. */
 export function SheepDefs() {
@@ -17,6 +19,15 @@ export function SheepDefs() {
     <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
       <defs>
         <symbol id="sheep" viewBox={SHEEP_VIEWBOX}>
+          <g style={LINE}>
+            <rect x="20" y="44" width="5" height="14" rx="2.5" />
+            <rect x="35" y="44" width="5" height="14" rx="2.5" />
+            {WOOL.map(([x, y, r]) => (
+              <circle key={`${x}-${y}`} cx={x} cy={y} r={r} />
+            ))}
+            <ellipse cx="17.5" cy="31" rx="6.5" ry="3.2" transform="rotate(-22 17.5 31)" />
+            <ellipse cx="42.5" cy="31" rx="6.5" ry="3.2" transform="rotate(22 42.5 31)" />
+          </g>
           <g style={FACE_FILL}>
             <rect x="20" y="44" width="5" height="14" rx="2.5" />
             <rect x="35" y="44" width="5" height="14" rx="2.5" />

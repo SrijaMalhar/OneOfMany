@@ -65,7 +65,9 @@ export function Fixes({ state, meaning, onToggle, onApply, onCopy, copied, onRet
                     <span className="fix-body">
                       <span className="fix-pair">
                         <del className="fix-old">{f.original}</del>
-                        <span className="fix-to">to</span>
+                        <span className="fix-to" aria-label="to">
+                          →
+                        </span>
                         <ins className={f.replacement ? 'fix-new' : 'fix-new is-removal'}>{f.replacement || 'removed'}</ins>
                       </span>
                       {f.reason ? <span className="fix-why">{f.reason}</span> : null}

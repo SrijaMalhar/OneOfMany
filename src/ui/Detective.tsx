@@ -82,7 +82,7 @@ export function Detective({ state, words, vaultFacts, earlierPosts, confirmed, s
       <div className="send">
         <button
           type="button"
-          className="btn btn-primary btn-lg btn-block"
+          className="btn btn-gold btn-lg btn-block"
           onClick={onSend}
           disabled={running || !confirmed || Boolean(blocker)}
           aria-busy={running || undefined}

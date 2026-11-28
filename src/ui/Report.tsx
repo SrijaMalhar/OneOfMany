@@ -277,6 +277,9 @@ export function Report({ run, scope, onScope, onHoverFact, draft, graderLabel, o
   return (
     <article className="file" aria-labelledby="file-title">
       <header className="file-head">
+        <p className="file-case">
+          Case no. {caseNumber(run.id)} · opened {new Date(run.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </p>
         <div className="section-head">
           <h2 id="file-title" className="section-title">
             The detective’s file on you
@@ -375,15 +378,15 @@ function FactStrip({ facts, reveal = Infinity }: { facts: Fact[]; reveal?: numbe
       </div>
       <div className="strip-legend">
         <span>
-          <span className="swatch swatch-hottest" aria-hidden="true" />
+          <span className="strip-cell strip-recovered" aria-hidden="true" />
           Found <b>{n('recovered')}</b>
         </span>
         <span>
-          <span className="swatch swatch-warm" aria-hidden="true" />
+          <span className="strip-cell strip-narrowed" aria-hidden="true" />
           Close <b>{n('narrowed')}</b>
         </span>
         <span>
-          <span className="swatch strip-safe" aria-hidden="true" />
+          <span className="strip-cell strip-safe" aria-hidden="true" />
           Missed <b>{n('safe')}</b>
         </span>
       </div>
@@ -477,6 +480,11 @@ export function Runs({ runs }: { runs: Run[] }) {
       <p className="small muted">One run is one sample, so results vary a little each time.</p>
     </section>
   )
+}
+
+/** A short, stable file number for a run, so a run can be referred to. */
+function caseNumber(id: number) {
+  return String(Math.floor(id) % 10000).padStart(4, '0')
 }
 
 function seconds(ms: number) {

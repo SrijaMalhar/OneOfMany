@@ -36,14 +36,14 @@ import { Header } from './ui/Header'
 import { evidenceTells, withHeat } from './ui/heat'
 import { useDeviceStatus, useOnline, useReceipt } from './ui/hooks'
 import { HowItWorks } from './ui/HowItWorks'
-import { CloudIcon, InfoIcon, LockIcon } from './ui/icons'
+import { CloudIcon, LockIcon } from './ui/icons'
 import { Receipt } from './ui/Receipt'
 import { Report, Runs, type Run, type RunView } from './ui/Report'
 import { Seam } from './ui/Seam'
 import { Threads, type Link } from './ui/Threads'
 import { now } from './ui/time'
 import { Nobody } from './landing/art'
-import { coach } from './ui/coach'
+import { coach, type Tone } from './ui/coach'
 import { useTheme } from './ui/theme'
 import { Toaster } from './ui/Toaster'
 import { toast } from './ui/toasts'
@@ -51,6 +51,16 @@ import { Vault } from './ui/Vault'
 import { Viewfinder } from './ui/Viewfinder'
 
 const MIN_WORDS = 15
+
+// Where Nobody looks on the sticky note: at the cloud while the detective
+// works, down at the draft when it's worried, up and away when it's calm.
+const NOBODY_LOOKS: Record<Tone, { x: number; y: number }> = {
+  neutral: { x: 0.4, y: -0.4 },
+  busy: { x: 1, y: -0.2 },
+  warn: { x: -0.3, y: 0.6 },
+  bad: { x: -0.7, y: 0.9 },
+  good: { x: 0.4, y: -0.6 },
+}
 
 function wordCount(s: string) {
   return (s.match(/\S+/g) ?? []).length
@@ -416,9 +426,9 @@ export default function App() {
           <div className="pane-bar">
             <div className="pane-bar-inner">
               <span className="pane-label">
-                <LockIcon /> This device
+                <LockIcon /> Your notebook
               </span>
-              <span className="pane-meta">Your vault and your checks stay here</span>
+              <span className="pane-meta">This device: your vault and your checks stay here</span>
             </div>
           </div>
           <div className="pane-body">
@@ -443,7 +453,7 @@ export default function App() {
 
             <div className="section">
               <p className={`hint tone-${hint.tone}`} role="status" aria-live="polite">
-                {hint.tone === 'good' ? <Nobody className="hint-nobody" wave look={{ x: 0.4, y: -0.4 }} /> : <InfoIcon />}
+                <Nobody className="hint-nobody" wave={hint.tone === 'good'} look={NOBODY_LOOKS[hint.tone]} />
                 <span>{hint.says}</span>
               </p>
               <Viewfinder
@@ -492,7 +502,7 @@ export default function App() {
           <div className="pane-bar">
             <div className="pane-bar-inner">
               <span className="pane-label">
-                <CloudIcon /> Cloud
+                <CloudIcon /> The case file
               </span>
               <span className="pane-meta mono">{lastRun?.report.model ?? settings.detectiveModel}</span>
             </div>

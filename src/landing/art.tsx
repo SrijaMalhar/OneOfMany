@@ -28,6 +28,7 @@ export function Nobody({ look, wave = false, className, title }: NobodyProps) {
       aria-hidden={title ? undefined : true}
       overflow="visible"
     >
+      <Outline />
       <g className="nb-legs">
         <rect x="20" y="44" width="5" height="14" rx="2.5" />
         <rect x="35" y="44" width="5" height="14" rx="2.5" />
@@ -64,6 +65,25 @@ export function Nobody({ look, wave = false, className, title }: NobodyProps) {
         </g>
       ) : null}
     </svg>
+  )
+}
+
+/**
+ * The sheep's silhouette, stroked and drawn first, so the fills on top leave
+ * a clean ink outline around the outside only. Its colour is a custom
+ * property: transparent unless a page asks for ink, as on paper.
+ */
+export function Outline({ className = 'nb-outline' }: { className?: string }) {
+  return (
+    <g className={className}>
+      <rect x="20" y="44" width="5" height="14" rx="2.5" />
+      <rect x="35" y="44" width="5" height="14" rx="2.5" />
+      {WOOL.map(([x, y, r]) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r={r} />
+      ))}
+      <ellipse cx="17.5" cy="31" rx="6.5" ry="3.2" transform="rotate(-22 17.5 31)" />
+      <ellipse cx="42.5" cy="31" rx="6.5" ry="3.2" transform="rotate(22 42.5 31)" />
+    </g>
   )
 }
 
