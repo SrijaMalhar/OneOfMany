@@ -15,8 +15,8 @@ export function Footer({ share, onShare, counts, configured }: Props) {
       <div className="foot-inner">
         <div className="foot-copy">
           <p>
-            OneOfMany is a privacy check, not a guarantee. It looks at the words only: your timing, account history, metadata and
-            writing habits across many posts can still give you away.
+            OneOfMany is a privacy check, not a guarantee. It looks at your words and writing habits: your timing, account history
+            and metadata can still give you away.
           </p>
           <p>The sample stories describe fictional people and fictional employers.</p>
         </div>

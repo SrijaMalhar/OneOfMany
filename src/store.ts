@@ -8,6 +8,7 @@ import { TELL_KINDS, type Profile, type Tell, type TellKind } from './types'
 const VAULT_KEY = 'oneofmany.vault.v1'
 const SHARE_KEY = 'oneofmany.shareCounts.v1'
 const DRAFT_KEY = 'oneofmany.draft.v1'
+const KNOWN_KEY = 'oneofmany.known.v1'
 
 function read<T>(storage: () => Storage, key: string, fallback: T): T {
   try {
@@ -36,6 +37,10 @@ export const saveVault = (p: Profile) => write(local, VAULT_KEY, p)
 /** Drafts live in session storage only: closing the tab forgets them. */
 export const loadDraft = (): string => read<string>(session, DRAFT_KEY, '')
 export const saveDraft = (d: string) => write(session, DRAFT_KEY, d || undefined)
+
+/** Writing under your real name, for the style match. Session only, like drafts. */
+export const loadKnown = (): string => read<string>(session, KNOWN_KEY, '')
+export const saveKnown = (k: string) => write(session, KNOWN_KEY, k || undefined)
 
 export const loadShareChoice = (): boolean => read<boolean>(local, SHARE_KEY, false)
 export const saveShareChoice = (v: boolean) => write(local, SHARE_KEY, v)

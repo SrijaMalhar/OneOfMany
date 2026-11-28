@@ -3985,6 +3985,100 @@ dialog.modal[open] {
   color: var(--warn);
 }
 
+/* ------------------------------------------------------------ style match */
+
+.disclosure-meta.is-alert {
+  color: var(--bad);
+}
+
+.habits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.habits li {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 4px 14px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line-strong);
+}
+
+.habit-label {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 21px;
+}
+
+.habit-n {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bad-mark);
+}
+
+.habit-tip {
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--fg-3);
+}
+
+.style-known {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.style-private {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--device);
+}
+
+.style-private .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.style-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  box-shadow: var(--lift-sm);
+}
+
+.style-strong .meter > span {
+  background: repeating-linear-gradient(135deg, var(--bad-mark) 0 5px, color-mix(in oklab, var(--bad-mark) 70%, #fff) 5px 8px);
+}
+
+.style-some .meter > span {
+  background: repeating-linear-gradient(135deg, var(--warn-mark) 0 5px, color-mix(in oklab, var(--warn-mark) 70%, #fff) 5px 8px);
+}
+
+.style-h {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+@media (max-width: 640px) {
+  .habits li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ------------------------------------------------------------ responsive */
 
 @media (max-width: 1040px) {

@@ -15,10 +15,12 @@ import { SAMPLES } from './samples'
 import {
   forgetEverything,
   loadDraft,
+  loadKnown,
   loadShareChoice,
   loadVault,
   readCounts,
   saveDraft,
+  saveKnown,
   saveShareChoice,
   saveVault,
   shareCounts,
@@ -40,6 +42,7 @@ import { CloudIcon, LockIcon } from './ui/icons'
 import { Receipt } from './ui/Receipt'
 import { Report, Runs, type Run, type RunView } from './ui/Report'
 import { Seam } from './ui/Seam'
+import { StyleMatch } from './ui/StyleMatch'
 import { SuspectPool } from './ui/SuspectPool'
 import { Threads, type Link } from './ui/Threads'
 import { now } from './ui/time'
@@ -96,6 +99,12 @@ export default function App() {
     setDraft(d)
   }
   const [earlier, setEarlier] = useState<string[]>([])
+  // Writing under your real name, for the style match. Never leaves the device.
+  const [known, setKnownState] = useState<string>(loadKnown)
+  const setKnown = (k: string) => {
+    setKnownState(k)
+    saveKnown(k)
+  }
   const earlierPosts = earlier.map((p) => p.trim()).filter(Boolean)
   const [warmKey, setWarmKey] = useState(0)
   const [sampleId, setSampleId] = useState<string | null>(null)
@@ -357,6 +366,7 @@ export default function App() {
     forgetEverything()
     setVaultState({})
     setDraftState('')
+    setKnownState('')
     setEarlier([])
     setRuns([])
     setFix(null)
@@ -524,6 +534,8 @@ export default function App() {
                 />
               </div>
             ) : null}
+
+            <StyleMatch draft={draft} known={known} onKnown={setKnown} />
 
             <EarlierPosts posts={earlier} onChange={setEarlier} />
 
